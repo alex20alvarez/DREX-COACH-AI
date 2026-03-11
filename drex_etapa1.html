@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DREX COACH AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --r:#FF1A1A;--r2:#FF4444;--r3:#CC0000;
+  --rg:rgba(255,26,26,.15);--rg2:rgba(255,26,26,.07);
+  --ink:#000;--s1:#0A0A0A;--s2:#111;--s3:#181818;--s4:#222;
+  --brd:rgba(255,255,255,.07);--brd-r:rgba(255,26,26,.22);
+  --txt:#FFF;--sub:#666;--sub2:#333;
+  --gr:#00FF88;--bl:#00AAFF;--pu:#BB88FF;--or:#FF8800;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--ink);color:var(--txt);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);}
+.z1{position:relative;z-index:1;}
+.hidden{display:none!important;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes neonPulse{0%,100%{text-shadow:0 0 7px var(--r),0 0 21px var(--r)}50%{text-shadow:0 0 3px var(--r),0 0 10px var(--r)}}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{transform:translateX(-10px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── UTILS */
+.btn{padding:10px 22px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:8px;justify-content:center;position:relative;overflow:hidden;}
+.btn-red{background:var(--r);color:#000;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+.btn-red:hover{background:var(--r2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(255,26,26,.4);}
+.btn-out{background:transparent;border:1px solid var(--brd-r);color:var(--r);}
+.btn-out:hover{border-color:var(--r);background:rgba(255,26,26,.06);}
+.btn-ghost{background:rgba(255,255,255,.04);border:1px solid var(--brd);color:var(--txt);}
+.btn-ghost:hover{background:rgba(255,255,255,.08);}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);text-transform:uppercase;letter-spacing:2px;}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.25);padding:10px 12px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:500;outline:none;transition:all .18s;width:100%;border-radius:0;}
+.field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--r);background:var(--rg2);box-shadow:inset 0 -2px 0 var(--r);}
+.field select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23FF1A1A'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.field select option{background:#111;}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.card{background:var(--s2);border:1px solid var(--brd);padding:18px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--r),transparent);}
+.card-h{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px;margin-bottom:14px;}
+.card-h::before{content:'';width:4px;height:4px;background:var(--r);transform:rotate(45deg);flex-shrink:0;}
+.sep{height:1px;background:var(--brd-r);margin:16px 0;}
+.err{color:var(--r);font-size:12px;padding:8px 12px;background:rgba(255,26,26,.07);border-left:2px solid var(--r);margin-top:2px;}
+.suc{color:var(--gr);font-size:12px;padding:8px 12px;background:rgba(0,255,136,.05);border-left:2px solid var(--gr);margin-top:2px;}
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--s3);border-left:3px solid var(--r);padding:10px 16px;font-family:'Share Tech Mono',monospace;font-size:11px;opacity:0;transform:translateX(10px);transition:all .22s;pointer-events:none;max-width:280px;}
+#toast.show{opacity:1;transform:translateX(0);}
+#toast.success{border-color:var(--gr);color:var(--gr);}
+#toast.error{border-color:var(--r);color:var(--r);}
+#toast.info{border-color:var(--bl);color:var(--bl);}
+.spin{width:12px;height:12px;border:2px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;}
+
+/* ════════════════════ LANDING ════════════════════ */
+.l-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,26,26,.12);}
+.logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;}
+.logo span{color:var(--r);animation:neonPulse 3s infinite;}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);letter-spacing:1px;margin-top:-2px;}
+.nav-btns{display:flex;gap:8px;align-items:center;}
+@media(max-width:600px){.l-nav{padding:12px 16px;}.nav-btns .btn-out{display:none;}}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 40px 60px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(255,26,26,.04) 0%,transparent 65%);}
+.hero-deco-1{position:absolute;top:12%;left:4%;width:0;height:0;border-left:50px solid transparent;border-right:50px solid transparent;border-bottom:86px solid rgba(255,26,26,.06);pointer-events:none;}
+.hero-deco-2{position:absolute;bottom:18%;right:6%;width:0;height:0;border-left:70px solid transparent;border-right:70px solid transparent;border-top:120px solid rgba(255,26,26,.04);pointer-events:none;}
+.hero-deco-3{position:absolute;top:28%;right:14%;width:70px;height:70px;border:1px solid rgba(255,26,26,.08);transform:rotate(45deg);pointer-events:none;}
+.hero-inner{text-align:center;position:relative;z-index:1;max-width:700px;}
+.hero-eye{display:inline-flex;align-items:center;gap:10px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--r);text-transform:uppercase;margin-bottom:20px;animation:fadeUp .5s ease;}
+.hero-eye::before,.hero-eye::after{content:'';width:28px;height:1px;background:var(--r);}
+.hero-h1{font-family:'Barlow Condensed',sans-serif;font-size:clamp(60px,11vw,118px);font-weight:900;line-height:.9;text-transform:uppercase;margin-bottom:10px;animation:fadeUp .5s .1s ease backwards;letter-spacing:-1px;}
+.hero-h1 .red{color:var(--r);text-shadow:0 0 30px rgba(255,26,26,.45);}
+.hero-h1 .outline{-webkit-text-stroke:2px rgba(255,255,255,.12);color:transparent;}
+.hero-sub{font-size:16px;color:var(--sub);max-width:480px;margin:18px auto 30px;line-height:1.65;animation:fadeUp .5s .18s ease backwards;font-weight:500;}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;animation:fadeUp .5s .26s ease backwards;}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);max-width:520px;margin:46px auto 0;border:1px solid rgba(255,26,26,.12);animation:fadeUp .5s .34s ease backwards;}
+.hs{padding:16px 8px;text-align:center;border-right:1px solid rgba(255,26,26,.08);}
+.hs:last-child{border-right:none;}
+.hs-v{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--r);}
+.hs-l{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);letter-spacing:.8px;text-transform:uppercase;margin-top:2px;}
+@media(max-width:500px){.hero{padding:90px 18px 40px;}.hero-stats{grid-template-columns:repeat(2,1fr);}}
+
+/* SECTION */
+.sec{padding:80px 40px;max-width:1100px;margin:0 auto;}
+@media(max-width:600px){.sec{padding:50px 18px;}}
+.sec-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--brd-r),transparent);}
+.sec-h{font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:900;text-transform:uppercase;margin-bottom:40px;line-height:1;}
+.sec-h span{color:var(--r);}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1.35fr;gap:64px;align-items:center;}
+@media(max-width:820px){.about-grid{grid-template-columns:1fr;gap:36px;}}
+.about-img-wrap{position:relative;max-width:380px;}
+@media(max-width:820px){.about-img-wrap{max-width:300px;margin:0 auto;}}
+.about-frame{position:relative;overflow:hidden;aspect-ratio:3/4;background:var(--s2);}
+.about-frame img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;filter:contrast(1.08) brightness(.92) saturate(.95);}
+.about-frame::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--r);box-shadow:0 0 18px rgba(255,26,26,.7);}
+.corner{position:absolute;width:18px;height:18px;z-index:2;}
+.c-tl{top:-1px;left:-1px;border-top:2px solid var(--r);border-left:2px solid var(--r);}
+.c-tr{top:-1px;right:-1px;border-top:2px solid var(--r);border-right:2px solid var(--r);}
+.c-bl{bottom:-1px;left:-1px;border-bottom:2px solid var(--r);border-left:2px solid var(--r);}
+.c-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--r);border-right:2px solid var(--r);}
+.about-badge{position:absolute;bottom:-18px;right:16px;background:var(--r);padding:12px 16px;text-align:center;box-shadow:0 0 24px rgba(255,26,26,.5);}
+.about-badge-v{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;color:#000;line-height:1;}
+.about-badge-l{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:800;color:rgba(0,0,0,.65);letter-spacing:1px;text-transform:uppercase;line-height:1.3;}
+.about-name{font-family:'Barlow Condensed',sans-serif;font-size:clamp(44px,6vw,76px);font-weight:900;letter-spacing:2px;text-transform:uppercase;line-height:1;}
+.about-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-top:5px;}
+.about-age{display:inline-flex;align-items:center;gap:7px;background:rgba(255,26,26,.06);border:1px solid rgba(255,26,26,.15);padding:4px 12px;margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--r);letter-spacing:1px;}
+.about-div{width:52px;height:2px;background:var(--r);margin:18px 0;box-shadow:0 0 10px rgba(255,26,26,.4);}
+.about-bio{font-size:15px;color:rgba(255,255,255,.72);line-height:1.78;font-weight:500;}
+.about-bio strong{color:#fff;}
+.about-bio em{color:var(--sub);font-style:normal;}
+.about-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.14);margin-top:26px;border:1px solid rgba(255,26,26,.1);}
+.ab-k{background:var(--s1);padding:13px 6px;text-align:center;}
+.ab-kv{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--r);}
+.ab-kl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.quote-block{background:rgba(255,26,26,.04);border-left:3px solid var(--r);padding:14px 18px;margin-top:20px;}
+.quote-text{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-style:italic;font-weight:700;letter-spacing:.5px;line-height:1.4;color:rgba(255,255,255,.85);}
+.quote-text span{color:var(--r);}
+
+/* FEATURES GRID */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,26,26,.09);}
+@media(max-width:800px){.feat-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.feat-grid{grid-template-columns:1fr;}}
+.feat-c{background:var(--s1);padding:26px 20px;transition:background .18s;position:relative;overflow:hidden;}
+.feat-c:hover{background:var(--rg2);}
+.feat-c::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),transparent);opacity:0;transition:opacity .18s;}
+.feat-c:hover::after{opacity:1;}
+.feat-num{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,26,26,.35);letter-spacing:2px;margin-bottom:12px;}
+.feat-ttl{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.feat-dsc{font-size:13px;color:var(--sub);line-height:1.65;font-weight:500;}
+
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,26,26,.1);}
+@media(max-width:800px){.price-grid{grid-template-columns:1fr;max-width:340px;margin:0 auto;}}
+.price-c{background:var(--s1);padding:30px 22px;position:relative;}
+.price-c.pop{background:var(--rg2);}
+.price-c.pop::before{content:'POPULAR';position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--r);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:900;letter-spacing:2px;padding:3px 14px;}
+.price-plan{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:2px;margin-bottom:9px;text-transform:uppercase;}
+.price-amt{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;line-height:1;color:var(--r);}
+.price-amt sub{font-size:13px;color:var(--sub);font-weight:400;}
+.price-feats{margin:18px 0;display:flex;flex-direction:column;gap:7px;}
+.pf{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;}
+.pf::before{content:'▸';color:var(--r);font-size:10px;flex-shrink:0;}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(255,26,26,.08);padding:22px 40px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub2);letter-spacing:1px;}
+
+/* ════════════════════ AUTH OVERLAY ════════════════════ */
+.overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
+.modal{background:var(--s2);border:1px solid rgba(255,26,26,.18);padding:30px 26px;width:100%;max-width:440px;max-height:92vh;overflow-y:auto;box-shadow:0 0 60px rgba(255,26,26,.07),0 40px 80px rgba(0,0,0,.8);animation:fadeUp .3s cubic-bezier(.16,1,.3,1);position:relative;}
+.modal::-webkit-scrollbar{width:2px;}
+.modal::-webkit-scrollbar-thumb{background:var(--r);}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),transparent);}
+.m-logo{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:2px;}
+.m-logo span{color:var(--r);}
+.m-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:1px;margin-bottom:22px;}
+.m-form{display:flex;flex-direction:column;gap:13px;}
+.m-sw{text-align:center;margin-top:13px;font-size:13px;color:var(--sub);}
+.m-sw a{color:var(--r);cursor:pointer;font-weight:700;}
+.m-sw a:hover{text-decoration:underline;}
+.ref-st{font-family:'Share Tech Mono',monospace;font-size:9px;margin-top:3px;}
+.ref-st.ok{color:var(--gr);}
+.ref-st.bad{color:var(--r);}
+
+/* ════════════════════ MOOD ════════════════════ */
+#moodOverlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.94);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s;}
+.mood-box{background:var(--s2);border:1px solid rgba(255,26,26,.22);padding:28px 24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;animation:fadeUp .3s cubic-bezier(.16,1,.3,1);position:relative;}
+.mood-box::-webkit-scrollbar{width:2px;}
+.mood-box::-webkit-scrollbar-thumb{background:var(--r);}
+.mood-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--r),transparent);}
+.mood-h{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.mood-h span{color:var(--r);}
+.mood-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:.5px;margin-bottom:20px;}
+.mood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:20px;}
+.mb{background:var(--s1);padding:14px 6px;text-align:center;cursor:pointer;transition:background .13s;position:relative;}
+.mb:hover,.mb.sel{background:var(--rg2);}
+.mb.sel::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--r);}
+.mb-e{font-size:26px;display:block;margin-bottom:5px;}
+.mb-l{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--sub);}
+.mb.sel .mb-l{color:var(--r);}
+.sl-sec{margin-bottom:16px;}
+.sl-row{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;font-family:'Share Tech Mono',monospace;}
+.sl-v{color:var(--r);}
+input[type=range]{width:100%;-webkit-appearance:none;height:3px;background:rgba(255,255,255,.06);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--r);cursor:pointer;transform:rotate(45deg);border-radius:0;box-shadow:0 0 8px rgba(255,26,26,.5);}
+.cycle-box{background:rgba(187,136,255,.04);border:1px solid rgba(187,136,255,.12);border-left:2px solid var(--pu);padding:13px;margin-bottom:16px;}
+.cyc-h{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--pu);margin-bottom:9px;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;}
+.chip{padding:4px 11px;border:1px solid rgba(187,136,255,.18);color:var(--pu);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .12s;text-transform:uppercase;}
+.chip:hover,.chip.sel{background:rgba(187,136,255,.1);border-color:rgba(187,136,255,.4);}
+
+/* ════════════════════ MAIN APP ════════════════════ */
+#mainApp{display:none;min-height:100vh;}
+.sb{position:fixed;top:0;left:0;bottom:0;width:54px;background:var(--s1);border-right:1px solid rgba(255,26,26,.1);display:flex;flex-direction:column;align-items:center;padding:13px 0;gap:2px;z-index:100;transition:width .25s cubic-bezier(.16,1,.3,1);overflow:hidden;}
+.sb:hover{width:192px;}
+.sb-logo{width:32px;height:32px;background:var(--r);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;color:#000;letter-spacing:1px;margin-bottom:10px;flex-shrink:0;box-shadow:0 0 12px rgba(255,26,26,.35);}
+.ni{width:calc(100% - 6px);padding:9px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .13s;overflow:hidden;white-space:nowrap;position:relative;}
+.ni::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--r);transform:scaleY(0);transition:transform .13s;}
+.ni:hover{background:var(--rg2);}
+.ni:hover::before,.ni.active::before{transform:scaleY(1);}
+.ni.active{background:rgba(255,26,26,.07);}
+.ni svg{width:16px;height:16px;fill:var(--sub);transition:fill .13s;flex-shrink:0;}
+.ni:hover svg,.ni.active svg{fill:var(--r);}
+.ni-l{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);opacity:0;transition:opacity .08s .03s;white-space:nowrap;}
+.sb:hover .ni-l{opacity:1;}
+.ni.active .ni-l{color:var(--txt);}
+.sb-div{width:calc(100% - 16px);height:1px;background:rgba(255,26,26,.08);margin:5px 0;}
+.sb-sp{flex:1;}
+.sb-av{width:28px;height:28px;background:rgba(255,26,26,.12);border:1px solid rgba(255,26,26,.28);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;color:var(--r);cursor:pointer;flex-shrink:0;}
+.mw{margin-left:54px;min-height:100vh;}
+.topbar{height:50px;background:rgba(0,0,0,.88);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,26,26,.08);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:50;}
+.tb-l{display:flex;align-items:center;gap:10px;}
+.page-t{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+.date-c{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);background:var(--s2);border:1px solid var(--brd);padding:3px 8px;}
+.tb-r{display:flex;align-items:center;gap:7px;}
+.sub-b{display:flex;align-items:center;gap:5px;background:var(--rg2);border:1px solid var(--brd-r);padding:4px 9px;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);letter-spacing:.5px;cursor:pointer;}
+.live{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);}
+.dot{width:5px;height:5px;background:var(--r);animation:blink 2s infinite;flex-shrink:0;}
+.page{display:none;padding:18px;animation:fadeUp .22s cubic-bezier(.16,1,.3,1);}
+.page.active{display:block;}
+.ph{margin-bottom:16px;}
+.ph-eye{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:9px;margin-bottom:5px;}
+.ph-eye::after{content:'';width:38px;height:1px;background:var(--r);}
+.ph-h{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;line-height:1;}
+
+/* KPI */
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:14px;}
+@media(max-width:900px){.krow{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--s2);padding:15px;transition:background .18s;}
+.kpi:hover{background:var(--rg2);}
+.kpi-ico{font-size:17px;margin-bottom:9px;}
+.kpi-v{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;line-height:1;}
+.kpi-l{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin:3px 0 7px;letter-spacing:.5px;text-transform:uppercase;}
+.tag{display:inline-flex;align-items:center;gap:3px;font-family:'Share Tech Mono',monospace;font-size:8px;padding:2px 6px;letter-spacing:.3px;}
+.tag-r{background:rgba(255,26,26,.08);color:var(--r);}
+.tag-g{background:rgba(0,255,136,.06);color:var(--gr);}
+.tag-b{background:rgba(0,170,255,.06);color:var(--bl);}
+
+/* DASHBOARD GRIDS */
+.dg2{display:grid;grid-template-columns:2fr 1fr;gap:1px;background:rgba(255,26,26,.06);margin-bottom:14px;}
+@media(max-width:800px){.dg2{grid-template-columns:1fr;}}
+.dg2c{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,26,26,.06);}
+@media(max-width:700px){.dg2c{grid-template-columns:1fr;}}
+.cc{background:var(--s2);padding:16px;}
+.cc-h{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+.cc-h::before{content:'';width:3px;height:3px;background:var(--r);transform:rotate(45deg);}
+.mood-b{background:var(--rg2);border:1px solid var(--brd-r);border-left:3px solid var(--r);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .16s;}
+.mood-b:hover{background:rgba(255,26,26,.08);}
+.mac-list{display:flex;flex-direction:column;gap:12px;}
+.mac-row{display:flex;flex-direction:column;gap:4px;}
+.mac-top{display:flex;justify-content:space-between;align-items:center;}
+.mac-nm{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.mac-val{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);}
+.mac-bg{height:2px;background:rgba(255,255,255,.04);}
+.mac-fill{height:100%;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.wk-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:9px;}
+.dc{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.dc-l{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub2);text-transform:uppercase;}
+.dc-bw{height:40px;display:flex;align-items:flex-end;width:100%;}
+.dc-b{width:100%;min-height:3px;transition:height .8s cubic-bezier(.16,1,.3,1);}
+.act-item{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--brd);}
+.act-item:last-child{border-bottom:none;}
+.act-dot{width:5px;height:5px;transform:rotate(45deg);flex-shrink:0;margin-top:4px;}
+.act-t{font-size:11px;flex:1;font-weight:500;}
+.act-time{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);}
+
+/* CHAT */
+.chat-wrap{display:grid;grid-template-columns:1fr 260px;gap:1px;background:rgba(255,26,26,.06);height:calc(100vh - 96px);}
+@media(max-width:900px){.chat-wrap{grid-template-columns:1fr;height:auto;}}
+.chat-main{background:var(--s2);display:flex;flex-direction:column;overflow:hidden;}
+.ch-hdr{padding:11px 14px;border-bottom:1px solid rgba(255,26,26,.08);display:flex;align-items:center;gap:9px;background:var(--s1);flex-shrink:0;}
+.ch-av{width:32px;height:32px;background:var(--r);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:12px;color:#000;flex-shrink:0;box-shadow:0 0 8px rgba(255,26,26,.3);}
+.ch-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+.ch-st{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gr);}
+.mood-ctx{padding:7px 14px;background:rgba(255,26,26,.05);border-bottom:1px solid rgba(255,26,26,.08);display:flex;align-items:center;gap:8px;font-size:12px;flex-shrink:0;}
+.mood-ctx strong{color:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:.3px;text-transform:uppercase;}
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:11px;scroll-behavior:smooth;}
+.msgs::-webkit-scrollbar{width:2px;}
+.msgs::-webkit-scrollbar-thumb{background:rgba(255,26,26,.25);}
+.msg{display:flex;gap:7px;animation:slideIn .22s ease;}
+.msg.um{flex-direction:row-reverse;}
+.mav{width:24px;height:24px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:'Barlow Condensed',sans-serif;}
+.mav.c{background:var(--r);color:#000;}
+.mav.u{background:var(--s3);border:1px solid var(--brd);color:var(--sub);}
+.bub{max-width:78%;padding:9px 12px;font-size:13px;line-height:1.58;font-weight:500;}
+.bub.c{background:var(--s3);border:1px solid var(--brd);border-left:2px solid var(--r);}
+.bub.u{background:var(--rg2);border:1px solid var(--brd-r);border-right:2px solid var(--r);}
+.bub strong{color:var(--r);}
+.bub-t{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);margin-top:2px;}
+.typ{display:flex;gap:4px;padding:9px 12px;}
+.typ span{width:5px;height:5px;background:var(--r);transform:rotate(45deg);animation:tdot 1.4s infinite;}
+.typ span:nth-child(2){animation-delay:.2s;}
+.typ span:nth-child(3){animation-delay:.4s;}
+.q-pills{padding:0 14px 7px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.q-pills::-webkit-scrollbar{display:none;}
+.qp{flex-shrink:0;padding:4px 11px;background:var(--rg2);border:1px solid var(--brd-r);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--r2);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.qp:hover{background:rgba(255,26,26,.12);}
+.ci-row{padding:9px 14px;border-top:1px solid rgba(255,26,26,.08);display:flex;gap:6px;align-items:flex-end;background:var(--s1);flex-shrink:0;}
+.ci-btn{width:30px;height:30px;border:1px solid var(--brd);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub);transition:all .12s;}
+.ci-btn:hover{border-color:var(--brd-r);color:var(--r);}
+.ci-btn svg{width:13px;height:13px;fill:currentColor;}
+.msg-inp{flex:1;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.25);padding:8px 11px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:500;resize:none;outline:none;max-height:80px;transition:border-bottom-color .16s;line-height:1.5;border-radius:0;}
+.msg-inp:focus{border-bottom-color:var(--r);}
+.msg-inp::placeholder{color:var(--sub2);}
+.send-b{width:32px;height:32px;background:var(--r);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);}
+.send-b:hover{background:var(--r2);box-shadow:0 0 12px rgba(255,26,26,.4);}
+.send-b svg{width:12px;height:12px;fill:#000;}
+.chat-side{background:var(--s2);display:flex;flex-direction:column;}
+@media(max-width:900px){.chat-side{display:none;}}
+.cs-b{padding:14px;border-bottom:1px solid rgba(255,26,26,.07);}
+.ring-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.ring-v{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--r);}
+.ring-s{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);}
+.di-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd);font-size:11px;font-weight:500;}
+.di-k{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);}
+.wa-btn{width:100%;padding:10px;background:rgba(37,211,102,.05);border:1px solid rgba(37,211,102,.15);color:#25D366;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .13s;}
+.wa-btn:hover{background:rgba(37,211,102,.1);}
+.wa-btn svg{width:13px;height:13px;fill:#25D366;}
+.photo-drop{margin:0 14px 7px;border:1px dashed rgba(255,26,26,.2);padding:10px;text-align:center;cursor:pointer;font-size:11px;color:var(--sub);position:relative;transition:all .15s;}
+.photo-drop:hover{background:var(--rg2);}
+.photo-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+/* NUTRITION */
+.nut-g{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,26,26,.06);margin-bottom:14px;}
+@media(max-width:700px){.nut-g{grid-template-columns:1fr;}}
+.drop-z{background:var(--s2);border:2px dashed rgba(255,26,26,.18);padding:26px 14px;text-align:center;cursor:pointer;transition:all .16s;position:relative;}
+.drop-z:hover{background:var(--rg2);border-color:rgba(255,26,26,.45);}
+.drop-z input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.drop-ico{font-size:28px;margin-bottom:8px;opacity:.6;}
+.drop-h{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-bottom:3px;}
+.drop-s{font-size:12px;color:var(--sub);}
+.prev-img{width:100%;margin-top:10px;max-height:170px;object-fit:cover;display:none;border:1px solid var(--brd-r);}
+.an-btn{display:none;width:100%;margin-top:9px;padding:11px;background:var(--r);border:none;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#000;cursor:pointer;transition:all .13s;}
+.an-btn:hover{background:var(--r2);}
+.ar-res{background:var(--s3);border:1px solid var(--brd-r);border-left:2px solid var(--r);padding:13px;margin-top:10px;display:none;animation:fadeUp .25s ease;}
+.ar-m{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:10px;}
+.ar-mc{background:var(--s2);padding:9px 5px;text-align:center;}
+.ar-mv{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;}
+.ar-ml{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.add-d{width:100%;margin-top:9px;padding:8px;background:var(--rg2);border:1px solid var(--brd-r);color:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:all .13s;}
+.add-d:hover{background:rgba(255,26,26,.12);}
+.meal-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--brd);}
+.meal-ico{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--rg2);}
+.meal-nm{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.2px;}
+.meal-t{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);}
+.meal-k{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--r);}
+
+/* TRAINING */
+.tr-lay{display:grid;grid-template-columns:1fr 260px;gap:1px;background:rgba(255,26,26,.06);}
+@media(max-width:900px){.tr-lay{grid-template-columns:1fr;}}
+.ex-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,26,26,.06);margin-bottom:14px;}
+@media(max-width:500px){.ex-grid{grid-template-columns:1fr;}}
+.ex-c{background:var(--s2);padding:14px;cursor:pointer;transition:background .13s;position:relative;overflow:hidden;}
+.ex-c:hover{background:var(--rg2);}
+.ex-c.done{background:rgba(0,255,136,.025);}
+.ex-c::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--r);transform:scaleX(0);transition:transform .18s;}
+.ex-c.done::before{background:var(--gr);transform:scaleX(1);}
+.ex-num{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,26,26,.35);letter-spacing:2px;margin-bottom:6px;}
+.ex-nm{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px;line-height:1.1;}
+.ex-sets{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);margin-bottom:8px;}
+.ex-tags{display:flex;gap:3px;flex-wrap:wrap;}
+.xt{font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 5px;text-transform:uppercase;letter-spacing:.3px;}
+.xt-r{background:var(--rg2);color:var(--r);}
+.xt-b{background:rgba(0,170,255,.06);color:var(--bl);}
+.xt-p{background:rgba(187,136,255,.07);color:var(--pu);}
+.ex-ck{position:absolute;top:10px;right:10px;width:17px;height:17px;border:1.5px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:8px;transition:all .16s;}
+.ex-c.done .ex-ck{background:rgba(0,255,136,.1);border-color:var(--gr);color:var(--gr);}
+.adapt-b{background:rgba(187,136,255,.04);border:1px solid rgba(187,136,255,.14);border-left:3px solid var(--pu);padding:11px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;}
+.adapt-b strong{color:var(--pu);font-family:'Barlow Condensed',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.3px;}
+.timer-p{background:var(--s2);padding:18px;text-align:center;}
+.timer-l{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;}
+.timer-d{font-family:'Barlow Condensed',sans-serif;font-size:54px;font-weight:900;color:var(--r);line-height:1;margin:10px 0;text-shadow:0 0 18px rgba(255,26,26,.4);}
+.timer-btns{display:flex;gap:5px;justify-content:center;margin-bottom:12px;}
+.tbtn{padding:7px 14px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;border:none;transition:all .12s;}
+.tbtn.go{background:var(--r);color:#000;}
+.tbtn.go:hover{background:var(--r2);}
+.tbtn.pa{background:var(--s3);border:1px solid var(--brd);color:var(--txt);}
+.tbtn.re{background:var(--rg2);border:1px solid var(--brd-r);color:var(--r);}
+.pset-row{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;}
+.pset{padding:3px 9px;border:1px solid var(--brd);background:transparent;color:var(--sub);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;transition:all .12s;}
+.pset:hover{border-color:var(--brd-r);color:var(--r);}
+
+/* STATS */
+.st2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,26,26,.06);margin-bottom:14px;}
+@media(max-width:700px){.st2{grid-template-columns:1fr;}}
+.st3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,26,26,.06);}
+@media(max-width:700px){.st3{grid-template-columns:1fr;}}
+.hm{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:7px;}
+.hm-c{height:18px;}
+
+/* SETTINGS */
+.set-g{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,26,26,.06);}
+@media(max-width:700px){.set-g{grid-template-columns:1fr;}}
+.set-b{background:var(--s2);padding:18px;}
+.set-h{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--r);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.set-h::before{content:'';width:3px;height:13px;background:var(--r);}
+.ref-disp{background:var(--rg2);border:1px solid var(--brd-r);padding:14px;text-align:center;margin-bottom:11px;}
+.ref-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.ref-code{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--r);letter-spacing:4px;}
+.ref-sts{display:flex;gap:18px;justify-content:center;margin-top:7px;}
+.rs-v{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--r);}
+.rs-l{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);text-transform:uppercase;}
+
+/* TRAINER */
+.tr-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:14px;}
+.tr-lay{display:grid;grid-template-columns:280px 1fr;gap:1px;background:rgba(255,26,26,.06);height:calc(100vh - 200px);overflow:hidden;}
+@media(max-width:1000px){.tr-lay{grid-template-columns:1fr;height:auto;overflow:auto;}}
+.cl-list{background:var(--s2);overflow-y:auto;}
+.cl-list::-webkit-scrollbar{width:2px;}
+.cl-list::-webkit-scrollbar-thumb{background:rgba(255,26,26,.25);}
+.cl-hd{padding:11px 13px;border-bottom:1px solid rgba(255,26,26,.08);background:var(--s1);position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;}
+.cl-hd-t{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--r);}
+.cl-item{padding:11px 13px;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .12s;display:flex;align-items:center;gap:10px;position:relative;}
+.cl-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--r);transform:scaleY(0);transition:transform .12s;}
+.cl-item:hover,.cl-item.active{background:var(--rg2);}
+.cl-item.active::before{transform:scaleY(1);}
+.cl-av{width:32px;height:32px;background:var(--rg2);border:1px solid var(--brd-r);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;color:var(--r);flex-shrink:0;}
+.cl-nm{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;}
+.cl-mt{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);}
+.cl-badge{font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 6px;letter-spacing:.3px;}
+.b-on{background:rgba(0,255,136,.07);color:var(--gr);border:1px solid rgba(0,255,136,.18);}
+.b-off{background:var(--rg2);color:var(--r);border:1px solid var(--brd-r);}
+.cl-det{background:var(--s2);overflow-y:auto;padding:18px;}
+.cl-det::-webkit-scrollbar{width:2px;}
+.cl-det::-webkit-scrollbar-thumb{background:rgba(255,26,26,.25);}
+.blk-h{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--r);margin:12px 0 6px;display:flex;align-items:center;gap:6px;}
+.blk-h::before{content:'▸';font-size:9px;}
+.pr-ed{width:100%;background:rgba(255,255,255,.02);border:1px solid var(--brd);border-bottom:1px solid var(--brd-r);padding:9px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.6;resize:vertical;outline:none;border-radius:0;}
+.pr-ed:focus{border-bottom-color:var(--r);}
+.dm-area{background:var(--rg2);border:1px solid var(--brd-r);padding:13px;margin-top:12px;}
+.empty-s{text-align:center;padding:22px;color:var(--sub2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.8px;}
+
+/* ════════════════════ PROFILE COMPLETION BANNER ════════════════════ */
+.profile-banner{display:none;background:linear-gradient(90deg,rgba(255,136,0,.08),rgba(255,136,0,.04));border:1px solid rgba(255,136,0,.2);border-left:3px solid var(--or);padding:12px 16px;margin-bottom:14px;cursor:pointer;transition:background .15s;position:relative;overflow:hidden;animation:fadeUp .4s ease;}
+.profile-banner:hover{background:rgba(255,136,0,.1);}
+.profile-banner::after{content:'→';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--or);font-size:18px;font-weight:900;}
+.pb-top{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.pb-ico{font-size:18px;}
+.pb-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--or);}
+.pb-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,136,0,.65);letter-spacing:.5px;}
+.pb-bar-wrap{height:3px;background:rgba(255,136,0,.12);margin-top:9px;border-radius:0;}
+.pb-bar{height:100%;background:var(--or);transition:width .6s cubic-bezier(.16,1,.3,1);}
+
+#subWall{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.97);backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;}
+.sw-inner{max-width:520px;width:100%;text-align:center;position:relative;}
+.sw-deco-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;border-radius:50%;border:1px solid rgba(255,26,26,.06);pointer-events:none;}
+.sw-deco-ring2{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,26,26,.04);pointer-events:none;}
+.sw-icon{font-size:52px;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(255,26,26,.4));animation:neonPulse 3s infinite;}
+.sw-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(38px,7vw,72px);font-weight:900;text-transform:uppercase;letter-spacing:-1px;line-height:1;margin-bottom:8px;}
+.sw-title .red{color:var(--r);text-shadow:0 0 30px rgba(255,26,26,.5);}
+.sw-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:3px;text-transform:uppercase;margin-bottom:22px;}
+.sw-msg{font-size:15px;color:rgba(255,255,255,.6);line-height:1.7;max-width:360px;margin:0 auto 28px;font-weight:500;}
+.sw-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,26,26,.1);margin-bottom:22px;text-align:left;}
+.sw-plan{background:var(--s1);padding:18px 14px;position:relative;cursor:pointer;transition:background .15s;}
+.sw-plan:hover,.sw-plan.sel{background:var(--rg2);}
+.sw-plan.pop{background:rgba(255,26,26,.06);}
+.sw-plan.pop::before{content:'★ POPULAR';position:absolute;top:-1px;left:0;right:0;text-align:center;background:var(--r);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:900;letter-spacing:2px;padding:3px 0;}
+.sw-plan.sel::after{content:'✔';position:absolute;top:10px;right:10px;color:var(--r);font-size:11px;}
+.sw-pname{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.sw-pprice{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--r);line-height:1;}
+.sw-pprice sub{font-size:11px;color:var(--sub);font-weight:400;}
+.sw-pfeats{margin-top:9px;display:flex;flex-direction:column;gap:5px;}
+.sw-pf{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);display:flex;align-items:center;gap:5px;}
+.sw-pf::before{content:'▸';color:var(--r);font-size:8px;}
+.sw-stripe-btn{width:100%;padding:16px;background:var(--r);border:none;font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#000;cursor:pointer;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.sw-stripe-btn:hover{background:var(--r2);box-shadow:0 0 40px rgba(255,26,26,.4);transform:translateY(-1px);}
+.sw-stripe-btn.loading{opacity:.6;pointer-events:none;}
+.sw-note{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);letter-spacing:1px;margin-top:11px;}
+.sw-note a{color:rgba(255,26,26,.5);cursor:pointer;}
+.sw-note a:hover{color:var(--r);}
+@media(max-width:500px){.sw-plans{grid-template-columns:1fr;}.sw-deco-ring,.sw-deco-ring2{display:none;}}
+
+/* ════════════════════ ADMIN PANEL ENHANCED ════════════════════ */
+.adm-tabs{display:flex;gap:1px;background:rgba(255,26,26,.08);margin-bottom:14px;}
+.adm-tab{flex:1;padding:11px 8px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;background:var(--s1);transition:background .13s;color:var(--sub);position:relative;}
+.adm-tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--r);transform:scaleX(0);transition:transform .15s;}
+.adm-tab.active{background:var(--rg2);color:var(--txt);}
+.adm-tab.active::after{transform:scaleX(1);}
+.adm-section{display:none;}
+.adm-section.active{display:block;}
+
+/* Routine Builder */
+.rt-builder{background:var(--s2);border:1px solid var(--brd);padding:20px;}
+.rt-day-tabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:14px;}
+.rt-day{padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;background:var(--s3);border:1px solid var(--brd);color:var(--sub);transition:all .12s;}
+.rt-day:hover,.rt-day.active{background:var(--rg2);border-color:var(--brd-r);color:var(--r);}
+.ex-builder-row{display:flex;gap:7px;align-items:center;padding:9px 0;border-bottom:1px solid var(--brd);position:relative;}
+.ex-builder-row:last-child{border-bottom:none;}
+.ex-drag{cursor:grab;color:var(--sub2);font-size:14px;flex-shrink:0;}
+.ex-del{width:22px;height:22px;background:rgba(255,26,26,.07);border:1px solid var(--brd-r);color:var(--r);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;}
+.ex-del:hover{background:rgba(255,26,26,.15);}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px;}
+.vid-card{background:var(--s3);border:1px solid var(--brd);position:relative;overflow:hidden;cursor:pointer;transition:border-color .13s;}
+.vid-card:hover{border-color:var(--brd-r);}
+.vid-thumb{width:100%;aspect-ratio:16/9;background:var(--rg2);display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;}
+.vid-play{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
+.vid-card:hover .vid-play{opacity:1;}
+.vid-nm{padding:7px 8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.vid-meta{padding:0 8px 8px;font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);}
+.vid-del{position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(0,0,0,.7);border:1px solid var(--brd-r);color:var(--r);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .12s;}
+.vid-card:hover .vid-del{opacity:1;}
+.upload-zone{border:2px dashed rgba(255,26,26,.2);padding:28px;text-align:center;cursor:pointer;transition:all .15s;position:relative;margin-bottom:16px;}
+.upload-zone:hover{background:var(--rg2);border-color:rgba(255,26,26,.45);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-zone-ico{font-size:32px;margin-bottom:8px;}
+.upload-zone-h{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-bottom:3px;}
+.upload-zone-s{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);}
+.prog-bar-wrap{height:3px;background:var(--s4);margin-top:10px;display:none;}
+.prog-bar{height:100%;background:var(--r);transition:width .3s;width:0%;}
+.adm-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:14px;}
+.adm-kpi{background:var(--s2);padding:16px 12px;text-align:center;}
+.adm-kpi-v{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--r);}
+.adm-kpi-l{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.adm-kpi-d{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(0,255,136,.6);margin-top:3px;}
+
+/* Client detail enhanced */
+.cl-ph{display:flex;gap:16px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid rgba(255,26,26,.1);align-items:flex-start;}
+.cl-ph-av{width:52px;height:52px;background:var(--rg2);border:2px solid var(--r);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:var(--r);flex-shrink:0;position:relative;}
+.cl-ph-av::after{content:'';position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;background:var(--gr);border:2px solid var(--s2);}
+.cl-ph-info{flex:1}
+.cl-ph-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
+.cl-ph-meta{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-top:2px;}
+.cl-ph-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.cl-ph-tag{font-family:'Share Tech Mono',monospace;font-size:7px;padding:2px 8px;border:1px solid;letter-spacing:.3px;}
+.tag-lvl{color:var(--bl);border-color:rgba(0,170,255,.2);background:rgba(0,170,255,.06);}
+.tag-goal{color:var(--or);border-color:rgba(255,136,0,.2);background:rgba(255,136,0,.06);}
+.tag-sub-on{color:var(--gr);border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.05);}
+.tag-sub-off{color:var(--r);border-color:var(--brd-r);background:var(--rg2);}
+.cl-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,26,26,.08);margin-bottom:16px;}
+.cl-stat{background:var(--s3);padding:10px 6px;text-align:center;}
+.cl-stat-v{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--r);}
+.cl-stat-l{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub);text-transform:uppercase;letter-spacing:.3px;margin-top:1px;}
+.prompt-section{background:rgba(255,26,26,.03);border:1px solid rgba(255,26,26,.1);border-left:3px solid var(--r);padding:14px;margin-bottom:12px;}
+.prompt-label{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.ai-prompt-ed{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--brd);padding:10px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.7;resize:vertical;outline:none;border-radius:0;min-height:90px;}
+.ai-prompt-ed:focus{border-bottom:1px solid var(--r);}
+.quick-prompts{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.qpr{font-family:'Share Tech Mono',monospace;font-size:7px;padding:3px 8px;background:var(--rg2);border:1px solid var(--brd-r);color:var(--r);cursor:pointer;transition:background .12s;}
+.qpr:hover{background:rgba(255,26,26,.15);}
+.cl-actions{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;}
+.action-btn{flex:1;min-width:100px;padding:9px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.ab-primary{background:var(--r);color:#000;}
+.ab-primary:hover{background:var(--r2);}
+.ab-wa{background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.2);color:#25D366;}
+.ab-wa:hover{background:rgba(37,211,102,.15);}
+.ab-ghost{background:var(--rg2);border:1px solid var(--brd-r);color:var(--r);}
+.ab-ghost:hover{background:rgba(255,26,26,.12);}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing" class="z1">
+  <nav class="l-nav">
+    <div>
+      <div class="logo">DREX<span>COACH</span> AI</div>
+      <div class="logo-sub">BY DREXLER · PERFORMANCE SYSTEM</div>
+    </div>
+    <div class="nav-btns">
+      <a href="#pricing" class="btn btn-out" style="padding:7px 16px;font-size:12px;">PRECIOS</a>
+      <button class="btn btn-ghost" style="padding:7px 14px;font-size:12px;" onclick="openLogin()">LOGIN</button>
+      <button class="btn btn-red" style="padding:7px 16px;font-size:13px;" onclick="openRegister()">COMENZAR</button>
+    </div>
+  </nav>
+
+  <div class="hero z1">
+    <div class="hero-bg"></div>
+    <div class="hero-deco-1"></div><div class="hero-deco-2"></div><div class="hero-deco-3"></div>
+    <div class="hero-inner">
+      <div class="hero-eye">PERFORMANCE SYSTEM · BY DREXLER</div>
+      <div class="hero-h1">
+        <span class="red">DREX</span><br>
+        <span class="outline">COACH</span><br>
+        <span class="red">AI</span>
+      </div>
+      <p class="hero-sub">Tu cuerpo, tu estado, tu plan. AI que se adapta a cómo te sientes cada día. Entrena diferente.</p>
+      <div class="hero-btns">
+        <button class="btn btn-red" style="padding:12px 28px;font-size:16px;" onclick="openRegister()">▶ COMENZAR GRATIS</button>
+        <button class="btn btn-out" style="padding:12px 22px;font-size:14px;" onclick="scrollTo('about')">CONOCER A DREXLER</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hs"><div class="hs-v">27</div><div class="hs-l">AÑOS COACH</div></div>
+        <div class="hs"><div class="hs-v">5+</div><div class="hs-l">EXPERIENCIA</div></div>
+        <div class="hs"><div class="hs-v">AI</div><div class="hs-l">ADAPTIVO</div></div>
+        <div class="hs"><div class="hs-v">∞</div><div class="hs-l">EDADES</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT DREXLER -->
+  <div class="sec z1" id="about">
+    <div class="sec-lbl">EL COACH</div>
+    <div class="about-grid">
+      <div class="about-img-wrap">
+        <div class="about-frame">
+          <img src="drex.heic" alt="Drexler — Performance Coach"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div style="display:none;width:100%;height:100%;background:rgba(255,26,26,.06);align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:80px;font-weight:900;color:var(--r);">DX</div>
+          <div class="corner c-tl"></div><div class="corner c-tr"></div>
+          <div class="corner c-bl"></div><div class="corner c-br"></div>
+        </div>
+        <div class="about-badge">
+          <div class="about-badge-v">5</div>
+          <div class="about-badge-l">AÑOS DE<br>EXPERIENCIA</div>
+        </div>
+      </div>
+      <div>
+        <div class="about-name">DREXLER</div>
+        <div class="about-title">PERFORMANCE COACH · AI SYSTEM</div>
+        <div class="about-age">27 AÑOS · ESPECIALISTA EN MUSCULACIÓN</div>
+        <div class="about-div"></div>
+        <p class="about-bio">
+          Con <strong>5 años de experiencia</strong> en sala de musculación y entrenamiento de alto rendimiento, Drexler construyó un sistema que rompe con los planes genéricos que no funcionan.
+        </p>
+        <p class="about-bio" style="margin-top:13px">
+          Su filosofía es clara: el entrenamiento no se adapta a lo que <em>quieres</em> — se adapta a lo que tu cuerpo <strong>necesita</strong> en cada momento, para generar un cambio físico y mental real, sostenible y medible.
+        </p>
+        <p class="about-bio" style="margin-top:13px">
+          Un sistema diseñado para <strong>todo tipo de persona</strong>: desde el joven atleta que busca rendimiento máximo, hasta el adulto mayor que quiere ganar fuerza, moverse mejor y mejorar su calidad de vida. Sin importar tu punto de partida.
+        </p>
+        <div class="about-kpis">
+          <div class="ab-k"><div class="ab-kv">5+</div><div class="ab-kl">AÑOS</div></div>
+          <div class="ab-k"><div class="ab-kv">AI</div><div class="ab-kl">ADAPTIVO</div></div>
+          <div class="ab-k"><div class="ab-kv">100%</div><div class="ab-kl">PERSONAL</div></div>
+          <div class="ab-k"><div class="ab-kv">∞</div><div class="ab-kl">EDADES</div></div>
+        </div>
+        <div class="quote-block">
+          <div class="quote-text">"No entrenas para lo que quieres. Entrenas para lo que tu cuerpo <span>necesita</span>."</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);margin-top:6px;letter-spacing:1px;">— DREXLER</div>
+        </div>
+        <button class="btn btn-red" style="font-size:15px;padding:12px 28px;margin-top:22px" onclick="openRegister()">▶ ENTRENAR CON DREXLER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="sec z1">
+    <div class="sec-lbl">SISTEMA</div>
+    <div class="sec-h">¿POR QUÉ <span>DREX COACH</span>?</div>
+    <div class="feat-grid">
+      <div class="feat-c"><div class="feat-num">01 ·</div><div class="feat-ttl">AI por Estado de Ánimo</div><div class="feat-dsc">Detecta si estás motivado, cansado o estresado y adapta tu rutina en el momento.</div></div>
+      <div class="feat-c"><div class="feat-num">02 ·</div><div class="feat-ttl">Ciclo Menstrual AI</div><div class="feat-dsc">Para mujeres: rutinas y nutrición adaptadas por fase del ciclo. Período y síntomas incluidos.</div></div>
+      <div class="feat-c"><div class="feat-num">03 ·</div><div class="feat-ttl">Análisis con Foto</div><div class="feat-dsc">Sube foto de tu plato. La AI detecta calorías y macros al instante.</div></div>
+      <div class="feat-c"><div class="feat-num">04 ·</div><div class="feat-ttl">Coach Personalizado</div><div class="feat-dsc">Drexler configura instrucciones específicas del AI para cada cliente.</div></div>
+      <div class="feat-c"><div class="feat-num">05 ·</div><div class="feat-ttl">Rutinas Adaptativas</div><div class="feat-dsc">Ejercicios según tu meta, nivel, energía y fase hormonal. Siempre relevantes.</div></div>
+      <div class="feat-c"><div class="feat-num">06 ·</div><div class="feat-ttl">Para Todo Público</div><div class="feat-dsc">Jóvenes atletas, personas mayores, principiantes. El sistema se ajusta a ti.</div></div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="sec z1" id="pricing">
+    <div class="sec-lbl">INVERSIÓN</div>
+    <div class="sec-h">ELIGE TU <span>NIVEL</span></div>
+    <div class="price-grid">
+      <div class="price-c">
+        <div class="price-plan">BÁSICO</div>
+        <div class="price-amt">$19<sub>/mes</sub></div>
+        <div class="price-feats">
+          <div class="pf">Chat AI ilimitado</div><div class="pf">Análisis de comidas</div>
+          <div class="pf">Dashboard básico</div><div class="pf">Diario nutricional</div>
+        </div>
+        <button class="btn btn-out" style="width:100%;margin-top:16px;" onclick="openRegister('basic')">COMENZAR</button>
+      </div>
+      <div class="price-c pop">
+        <div class="price-plan">PRO</div>
+        <div class="price-amt">$39<sub>/mes</sub></div>
+        <div class="price-feats">
+          <div class="pf">Todo lo Básico</div><div class="pf">Rutinas por mood</div>
+          <div class="pf">Ciclo menstrual AI</div><div class="pf">Stats avanzadas</div>
+          <div class="pf">Timer de entreno</div>
+        </div>
+        <button class="btn btn-red" style="width:100%;margin-top:16px;font-size:15px;" onclick="openRegister('pro')">ELEGIR PRO</button>
+      </div>
+      <div class="price-c">
+        <div class="price-plan">ELITE</div>
+        <div class="price-amt">$69<sub>/mes</sub></div>
+        <div class="price-feats">
+          <div class="pf">Todo lo Pro</div><div class="pf">Acceso directo al Coach</div>
+          <div class="pf">Plan mensual custom</div><div class="pf">WhatsApp directo</div>
+        </div>
+        <button class="btn btn-out" style="width:100%;margin-top:16px;" onclick="openRegister('elite')">COMENZAR</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="z1">© 2025 DREX COACH AI · BY DREXLER · TODOS LOS DERECHOS RESERVADOS
+    <span id="adminSecret" onclick="adminQuickAccess()" style="margin-left:18px;opacity:0;cursor:pointer;user-select:none;font-size:8px;" title="">·</span>
+  </footer>
+</div>
+
+<!-- AUTH -->
+<div class="overlay hidden" id="authOverlay">
+  <!-- LOGIN -->
+  <div class="modal" id="loginModal">
+    <div class="m-logo">DREX<span>COACH</span> AI</div>
+    <div class="m-sub">ACCEDE A TU SISTEMA</div>
+    <div class="m-form">
+      <div class="field"><label>Email</label><input type="email" id="l-email" placeholder="tu@email.com" autocomplete="email"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <div id="l-err" class="hidden"></div>
+      <button class="btn btn-red" style="width:100%;font-size:15px;" id="loginBtn" onclick="doLogin()">ENTRAR</button>
+      <button class="btn btn-ghost" style="width:100%;font-size:12px;letter-spacing:1px;" onclick="openForgot()">¿OLVIDASTE TU CONTRASEÑA?</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="closeAuth()">CANCELAR</button>
+    </div>
+    <div class="m-sw">¿Sin cuenta? <a onclick="switchReg()">Regístrate aquí</a></div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="modal hidden" id="registerModal">
+    <div class="m-logo">CREAR CUENTA</div>
+    <div class="m-sub">ACTIVA TU PERFORMANCE SYSTEM</div>
+    <div class="m-form">
+      <div class="g2">
+        <div class="field"><label>Nombre</label><input type="text" id="r-name" placeholder="Tu nombre" autocomplete="given-name"></div>
+        <div class="field"><label>Apellido</label><input type="text" id="r-lastname" placeholder="Tu apellido" autocomplete="family-name"></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" id="r-email" placeholder="tu@email.com" autocomplete="email"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+      <div class="field">
+        <label>WhatsApp (con código de país)</label>
+        <input type="tel" id="r-whatsapp" placeholder="+1 305 000 0000">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);margin-top:3px;">Para rutinas y mensajes del Coach</div>
+      </div>
+      <div class="field">
+        <label>Código referido (opcional)</label>
+        <input type="text" id="r-ref" placeholder="Ej: ALEX-DC01" oninput="valRef(this.value)" style="text-transform:uppercase">
+        <div class="ref-st hidden" id="ref-st"></div>
+      </div>
+      <div id="r-plan-badge" style="display:none;background:var(--rg2);border:1px solid var(--brd-r);padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r);letter-spacing:1px;">PLAN SELECCIONADO: <strong id="r-plan-name">—</strong></div>
+      <div id="r-err" class="hidden"></div>
+      <button class="btn btn-red" style="width:100%;font-size:15px;" id="regBtn" onclick="doRegister()">▶ CREAR MI CUENTA</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="closeAuth()">CANCELAR</button>
+    </div>
+    <div class="m-sw">¿Ya tienes cuenta? <a onclick="switchLog()">Inicia sesión</a></div>
+  </div>
+
+  <!-- FORGOT PASSWORD -->
+  <div class="modal hidden" id="forgotModal">
+    <div class="m-logo">DREX<span>COACH</span> AI</div>
+    <div class="m-sub">RECUPERAR CONTRASEÑA</div>
+    <div class="m-form">
+      <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:4px;">Ingresa tu email y te enviaremos instrucciones para restablecer tu contraseña.</p>
+      <div class="field"><label>Email</label><input type="email" id="fp-email" placeholder="tu@email.com"></div>
+      <div id="fp-msg" class="hidden"></div>
+      <button class="btn btn-red" style="width:100%;font-size:15px;" id="fpBtn" onclick="doForgot()">ENVIAR INSTRUCCIONES</button>
+      <button class="btn btn-ghost" style="width:100%;" onclick="switchLog()">← VOLVER AL LOGIN</button>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div class="modal hidden" id="resetModal">
+    <div class="m-logo">DREX<span>COACH</span> AI</div>
+    <div class="m-sub">NUEVA CONTRASEÑA</div>
+    <div class="m-form">
+      <div class="field"><label>Nueva contraseña</label><input type="password" id="rp-pass" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar contraseña</label><input type="password" id="rp-pass2" placeholder="Repite la contraseña"></div>
+      <div id="rp-msg" class="hidden"></div>
+      <button class="btn btn-red" style="width:100%;font-size:15px;" id="rpBtn" onclick="doReset()">GUARDAR NUEVA CONTRASEÑA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOOD CHECK-IN -->
+<div class="hidden" id="moodOverlay">
+  <div class="mood-box">
+    <div class="mood-h">ESTADO <span>HOY</span></div>
+    <div class="mood-sub">TU RESPUESTA ADAPTA TODA LA SESIÓN</div>
+    <div class="mood-grid">
+      <div class="mb" onclick="selMood('motivado','🔥',this)"><span class="mb-e">🔥</span><div class="mb-l">MOTIVADO</div></div>
+      <div class="mb" onclick="selMood('cansado','😴',this)"><span class="mb-e">😴</span><div class="mb-l">CANSADO</div></div>
+      <div class="mb" onclick="selMood('estresado','😤',this)"><span class="mb-e">😤</span><div class="mb-l">ESTRESADO</div></div>
+      <div class="mb" onclick="selMood('triste','😔',this)"><span class="mb-e">😔</span><div class="mb-l">BAJO ÁNIMO</div></div>
+    </div>
+    <div class="sl-sec"><div class="sl-row">ENERGÍA <span class="sl-v" id="eV">5</span>/10</div><input type="range" min="1" max="10" value="5" id="eS" oninput="document.getElementById('eV').textContent=this.value"></div>
+    <div class="sl-sec"><div class="sl-row">ESTRÉS <span class="sl-v" id="stV">5</span>/10</div><input type="range" min="1" max="10" value="5" id="stS" oninput="document.getElementById('stV').textContent=this.value"></div>
+    <div class="cycle-box hidden" id="cycSec">
+      <div class="cyc-h">🌙 CICLO MENSTRUAL</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);margin-bottom:7px;">FASE ACTUAL</div>
+      <div class="chips" id="cycChips">
+        <div class="chip" onclick="selCyc(this,'menstrual')">🩸 MENSTRUAL</div>
+        <div class="chip" onclick="selCyc(this,'folicular')">🌱 FOLICULAR</div>
+        <div class="chip" onclick="selCyc(this,'ovulacion')">✨ OVULACIÓN</div>
+        <div class="chip" onclick="selCyc(this,'lutea')">🌙 LÚTEA</div>
+      </div>
+      <div style="margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);margin-bottom:6px;">SÍNTOMAS</div>
+      <div class="chips" id="symChips">
+        <div class="chip" onclick="togSym(this,'dolores')">💊 DOLORES</div>
+        <div class="chip" onclick="togSym(this,'fatiga')">😴 FATIGA</div>
+        <div class="chip" onclick="togSym(this,'hinchazón')">🫁 HINCHAZÓN</div>
+        <div class="chip" onclick="togSym(this,'humor')">🎭 HUMOR</div>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;"><label>NOTA ADICIONAL</label><input type="text" id="mNote" placeholder="Ej: dormí mal, lesión, examen..."></div>
+    <button class="btn btn-red" style="width:100%;font-size:16px;padding:12px;" onclick="saveMood()">▶ ADAPTAR MI SESIÓN</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:7px;font-size:13px;letter-spacing:1px;" onclick="skipMood()">SALTAR POR AHORA</button>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION WALL -->
+<div id="subWall" class="hidden">
+  <div class="sw-inner">
+    <div class="sw-deco-ring"></div>
+    <div class="sw-deco-ring2"></div>
+    <div class="sw-icon">🔒</div>
+    <div class="sw-title">ACCESO <span class="red">DENEGADO</span></div>
+    <div class="sw-sub">MEMBRESÍA REQUERIDA</div>
+    <p class="sw-msg">Tu suscripción ha expirado o aún no tienes un plan activo. Elige tu nivel para desbloquear el sistema completo.</p>
+    <div class="sw-plans" id="swPlansGrid">
+      <div class="sw-plan" data-plan="basic" data-price="$19" onclick="selSwPlan(this)">
+        <div class="sw-pname">BÁSICO</div>
+        <div class="sw-pprice">$19<sub>/mes</sub></div>
+        <div class="sw-pfeats">
+          <div class="sw-pf">Chat AI ilimitado</div>
+          <div class="sw-pf">Análisis de comidas</div>
+          <div class="sw-pf">Dashboard & diario</div>
+        </div>
+      </div>
+      <div class="sw-plan pop" data-plan="pro" data-price="$39" onclick="selSwPlan(this)">
+        <div class="sw-pname" style="margin-top:12px">PRO</div>
+        <div class="sw-pprice">$39<sub>/mes</sub></div>
+        <div class="sw-pfeats">
+          <div class="sw-pf">Todo lo Básico</div>
+          <div class="sw-pf">Rutinas por mood</div>
+          <div class="sw-pf">Ciclo menstrual AI</div>
+          <div class="sw-pf">Stats avanzadas</div>
+        </div>
+      </div>
+      <div class="sw-plan" data-plan="elite" data-price="$69" onclick="selSwPlan(this)">
+        <div class="sw-pname">ELITE</div>
+        <div class="sw-pprice">$69<sub>/mes</sub></div>
+        <div class="sw-pfeats">
+          <div class="sw-pf">Todo lo Pro</div>
+          <div class="sw-pf">Coach directo</div>
+          <div class="sw-pf">WhatsApp Drexler</div>
+        </div>
+      </div>
+    </div>
+    <button class="sw-stripe-btn" id="swPayBtn" onclick="goToStripe()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+      PAGAR CON STRIPE — <span id="swSelPrice">$39</span>/MES
+    </button>
+    <div class="sw-note">
+      Pago seguro 256-bit SSL · Cancela cuando quieras · 
+      <a onclick="checkSubManual()">¿Ya pagaste? Verificar</a> · 
+      <a onclick="doLogout()">Cerrar sesión</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="z1">
+  <nav class="sb" id="sb">
+    <div class="sb-logo">DX</div>
+    <div class="ni active" onclick="goPage('dashboard',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span class="ni-l">DASHBOARD</span>
+    </div>
+    <div class="ni" onclick="goPage('chat',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+      <span class="ni-l">AI COACH</span>
+    </div>
+    <div class="ni" onclick="goPage('nutrition',this)">
+      <svg viewBox="0 0 24 24"><path d="M18.06 22.99h1.66c.84 0 1.53-.64 1.63-1.46L23 5.05h-5V1h-1.97v4.05h-4.97l.3 2.34c1.71.47 3.31 1.32 4.27 2.26 1.44 1.42 2.43 2.89 2.43 5.29v8.05zM1 21.99V21h15.03v.99c0 .55-.45 1-1.01 1H2.01c-.56 0-1.01-.45-1.01-1zm15.03-7c0-8-15.03-8-15.03 0h15.03z"/></svg>
+      <span class="ni-l">NUTRICIÓN</span>
+    </div>
+    <div class="ni" onclick="goPage('training',this)">
+      <svg viewBox="0 0 24 24"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29z"/></svg>
+      <span class="ni-l">ENTRENO</span>
+    </div>
+    <div class="ni" onclick="goPage('stats',this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+      <span class="ni-l">STATS</span>
+    </div>
+    <div class="ni" onclick="goPage('settings',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+      <span class="ni-l">PERFIL</span>
+    </div>
+    <div class="ni hidden" id="trainerNav" onclick="goPage('trainer',this)">
+      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span class="ni-l">TRAINER</span>
+    </div>
+    <div class="sb-sp"></div>
+    <div class="sb-av" id="sbAv" onclick="goPage('settings',document.querySelector('.ni:nth-child(7)')||null)">?</div>
+  </nav>
+
+  <div class="mw">
+    <div class="topbar">
+      <div class="tb-l">
+        <div class="page-t" id="pgTitle">DASHBOARD</div>
+        <div class="date-c" id="dtChip">—</div>
+      </div>
+      <div class="tb-r">
+        <div class="sub-b" id="subBadge">⭐ —</div>
+        <div class="live"><div class="dot"></div>ONLINE</div>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;letter-spacing:1px;" onclick="doLogout()">SALIR</button>
+      </div>
+    </div>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <!-- Profile Completion Banner -->
+      <div class="profile-banner" id="profileBanner" onclick="goPage('settings', document.querySelector('.ni:nth-child(6)'))">
+        <div class="pb-top">
+          <span class="pb-ico">⚡</span>
+          <span class="pb-title">COMPLETA TU PERFIL — MEJORA TU EXPERIENCIA</span>
+        </div>
+        <div class="pb-sub" id="pbSub">Ayuda al AI a conocerte mejor: peso, estatura, meta y más</div>
+        <div class="pb-bar-wrap"><div class="pb-bar" id="pbBar" style="width:20%"></div></div>
+      </div>
+
+      <div class="ph"><div class="ph-eye">RESUMEN · HOY</div><div class="ph-h">BIENVENIDO, <span id="dName" style="color:var(--r)">—</span></div></div>
+      <div class="mood-b" onclick="openMoodCheck()">
+        <span id="mBIcon" style="font-size:26px">⚡</span>
+        <div style="flex:1">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:.5px;text-transform:uppercase" id="mBTitle">REGISTRA TU ESTADO DE HOY</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub)" id="mBSub">El AI adapta tu sesión completa</div>
+        </div>
+        <button class="btn btn-red" style="padding:7px 16px;flex-shrink:0;font-size:13px;">CHECK-IN</button>
+      </div>
+      <div class="krow">
+        <div class="kpi"><div class="kpi-ico">🔥</div><div class="kpi-v" id="kKcal">0</div><div class="kpi-l">CALORÍAS HOY</div><div class="tag tag-r" id="kKcalD">— restantes</div></div>
+        <div class="kpi"><div class="kpi-ico">💪</div><div class="kpi-v" id="kEx">0/6</div><div class="kpi-l">EJERCICIOS</div><div class="tag tag-b" id="kExD">0% completado</div></div>
+        <div class="kpi"><div class="kpi-ico">⚡</div><div class="kpi-v" id="kStreak">1</div><div class="kpi-l">RACHA DÍAS</div><div class="tag tag-g">ACTIVA</div></div>
+        <div class="kpi"><div class="kpi-ico">🧠</div><div class="kpi-v" id="kMood">—</div><div class="kpi-l">ESTADO HOY</div><div class="tag tag-r" id="kMoodD">—</div></div>
+      </div>
+      <div class="dg2">
+        <div class="cc"><div class="cc-h">CALORÍAS — 7 DÍAS</div><div style="height:130px"><svg id="calSvg" width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="none"></svg></div></div>
+        <div class="cc">
+          <div class="cc-h">MACROS HOY</div>
+          <div class="mac-list">
+            <div class="mac-row"><div class="mac-top"><span class="mac-nm">PROTEÍNA</span><span class="mac-val" id="mP">0/0g</span></div><div class="mac-bg"><div class="mac-fill" id="mfP" style="width:0%;background:var(--r)"></div></div></div>
+            <div class="mac-row"><div class="mac-top"><span class="mac-nm">CARBS</span><span class="mac-val" id="mC">0/0g</span></div><div class="mac-bg"><div class="mac-fill" id="mfC" style="width:0%;background:var(--bl)"></div></div></div>
+            <div class="mac-row"><div class="mac-top"><span class="mac-nm">GRASAS</span><span class="mac-val" id="mF">0/0g</span></div><div class="mac-bg"><div class="mac-fill" id="mfF" style="width:0%;background:var(--or)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dg2c">
+        <div class="cc"><div class="cc-h">ACTIVIDAD SEMANAL</div><div class="wk-strip" id="wkStrip"></div></div>
+        <div class="cc"><div class="cc-h">ACTIVIDAD RECIENTE</div><div id="actFeed" style="margin-top:7px"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CHAT ══ -->
+    <div class="page" id="page-chat">
+      <div class="chat-wrap">
+        <div class="chat-main">
+          <div class="ch-hdr">
+            <div class="ch-av">DC</div>
+            <div style="flex:1"><div class="ch-name">DREX AI COACH</div><div class="ch-st">● ONLINE · BY DREXLER</div></div>
+          </div>
+          <div class="mood-ctx hidden" id="moodCtx">
+            <span id="mCtxE" style="font-size:15px">—</span>
+            <span>ADAPTADO: <strong id="mCtxL">—</strong> · ENERGÍA <strong id="mCtxEn">—</strong>/10</span>
+          </div>
+          <div class="msgs" id="msgs"></div>
+          <div class="photo-drop hidden" id="phDrop">
+            📸 SUBE FOTO DE COMIDA PARA ANÁLISIS AI
+            <input type="file" accept="image/*" onchange="handleChatPic(this)">
+          </div>
+          <div class="q-pills">
+            <div class="qp" onclick="sQ('¿Qué comer antes de entrenar hoy?')">PRE-ENTRENO</div>
+            <div class="qp" onclick="sQ('Dame la rutina para hoy según mi estado')">RUTINA HOY</div>
+            <div class="qp" onclick="sQ('¿Cómo hacer una sentadilla perfecta?')">TÉCNICA</div>
+            <div class="qp" onclick="sQ('Sustituir pollo por proteína equivalente')">SUSTITUTO</div>
+            <div class="qp" onclick="sQ('Me duele el hombro, ¿qué alternativa tengo?')">LESIÓN</div>
+          </div>
+          <div class="ci-row">
+            <button class="ci-btn" onclick="document.getElementById('phDrop').classList.toggle('hidden')" title="Foto comida">
+              <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+            </button>
+            <textarea class="msg-inp" id="msgI" placeholder="Pregunta al Coach..." rows="1" onkeydown="hKey(event)" oninput="aR(this)"></textarea>
+            <button class="send-b" onclick="sendMsg()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+          </div>
+        </div>
+        <div class="chat-side">
+          <div class="cs-b">
+            <div class="cc-h" style="margin-bottom:11px">META CALÓRICA</div>
+            <div class="ring-wrap">
+              <svg style="transform:rotate(-90deg)" width="76" height="76" viewBox="0 0 76 76">
+                <circle cx="38" cy="38" r="28" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="6"/>
+                <circle id="ringC" cx="38" cy="38" r="28" fill="none" stroke="var(--r)" stroke-width="6" stroke-linecap="square" stroke-dasharray="176" stroke-dashoffset="176" style="transition:stroke-dashoffset 1.2s cubic-bezier(.16,1,.3,1);filter:drop-shadow(0 0 5px rgba(255,26,26,.5))"/>
+              </svg>
+              <div class="ring-v" id="ringV">0</div>
+              <div class="ring-s">/ <span id="ringG">2200</span> KCAL</div>
+            </div>
+          </div>
+          <div class="cs-b" style="flex:1;overflow-y:auto">
+            <div class="cc-h" style="margin-bottom:8px">DIARIO HOY</div>
+            <div id="diaryS"><div class="empty-s" style="padding:7px;font-size:9px">Sin registros</div></div>
+          </div>
+          <div class="cs-b">
+            <button class="wa-btn" onclick="sendWA()">
+              <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              ENVIAR A WHATSAPP
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NUTRITION ══ -->
+    <div class="page" id="page-nutrition">
+      <div class="ph"><div class="ph-eye">ANÁLISIS IA</div><div class="ph-h">NUTRICIÓN</div></div>
+      <div class="nut-g">
+        <div style="background:var(--s2);padding:17px">
+          <div class="card-h">ANALIZA TU COMIDA</div>
+          <!-- Drop zone — solo subir, el AI analiza automáticamente -->
+          <div class="drop-z" id="dropZ">
+            <div class="drop-ico" id="dropIco">📸</div>
+            <div class="drop-h" id="dropH">SUBE TU FOTO</div>
+            <div class="drop-s" id="dropS">El AI analiza y guarda automáticamente</div>
+            <input type="file" accept="image/*" id="fInput" onchange="handleFoodPic(this)">
+          </div>
+          <!-- Analyzing state -->
+          <div id="anState" style="display:none;text-align:center;padding:18px 0;">
+            <div style="font-size:28px;margin-bottom:8px;animation:pulse 1s infinite">⚡</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--r);letter-spacing:2px;">ANALIZANDO...</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-top:4px;">El AI está identificando calorías y macros</div>
+          </div>
+          <!-- Result flash (auto-hides after 3s) -->
+          <div class="ar-res" id="arRes" style="display:none;">
+            <div class="ar-m">
+              <div class="ar-mc"><div class="ar-mv" id="arK" style="color:var(--r)">—</div><div class="ar-ml">KCAL</div></div>
+              <div class="ar-mc"><div class="ar-mv" id="arP" style="color:var(--gr)">—</div><div class="ar-ml">PROT</div></div>
+              <div class="ar-mc"><div class="ar-mv" id="arC" style="color:var(--bl)">—</div><div class="ar-ml">CARBS</div></div>
+              <div class="ar-mc"><div class="ar-mv" id="arF" style="color:var(--or)">—</div><div class="ar-ml">GRASAS</div></div>
+            </div>
+            <div id="arTxt" style="font-size:12px;line-height:1.6;color:var(--sub);font-weight:500;margin-top:8px;"></div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gr);margin-top:8px;text-align:center;">✓ GUARDADO EN DIARIO AUTOMÁTICAMENTE</div>
+          </div>
+        </div>
+        <div style="background:var(--s2);padding:17px">
+          <div class="card-h">MACROS HOY</div>
+          <svg viewBox="0 0 200 200" width="100%" height="150">
+            <circle cx="100" cy="100" r="65" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="22"/>
+            <circle id="dp" cx="100" cy="100" r="65" fill="none" stroke="var(--r)" stroke-width="22" stroke-dasharray="0 409" style="transform:rotate(-90deg);transform-origin:100px 100px;transition:stroke-dasharray 1s ease"/>
+            <circle id="dc" cx="100" cy="100" r="65" fill="none" stroke="var(--bl)" stroke-width="22" stroke-dasharray="0 409" style="transform:rotate(-90deg);transform-origin:100px 100px;transition:stroke-dasharray 1s ease"/>
+            <circle id="df" cx="100" cy="100" r="65" fill="none" stroke="var(--or)" stroke-width="22" stroke-dasharray="0 409" style="transform:rotate(-90deg);transform-origin:100px 100px;transition:stroke-dasharray 1s ease"/>
+            <text x="100" y="96" text-anchor="middle" fill="#fff" font-family="'Barlow Condensed',sans-serif" font-weight="900" font-size="20" id="donutK">0</text>
+            <text x="100" y="111" text-anchor="middle" fill="#444" font-family="'Share Tech Mono',monospace" font-size="7">KCAL HOY</text>
+          </svg>
+          <div style="display:flex;justify-content:center;gap:18px;margin-top:5px">
+            <div style="text-align:center"><div style="width:6px;height:6px;background:var(--r);margin:0 auto 2px"></div><div style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub)">PROT</div></div>
+            <div style="text-align:center"><div style="width:6px;height:6px;background:var(--bl);margin:0 auto 2px"></div><div style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub)">CARBS</div></div>
+            <div style="text-align:center"><div style="width:6px;height:6px;background:var(--or);margin:0 auto 2px"></div><div style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub)">GRASAS</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--brd);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+          <div class="card-h" style="margin:0">REGISTRO DEL DÍA</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--r)" id="mealTotal">0 KCAL</div>
+        </div>
+        <div id="mealLog"><div class="empty-s">ANALIZA TU PRIMERA COMIDA 📸</div></div>
+      </div>
+    </div>
+
+    <!-- ══ TRAINING ══ -->
+    <div class="page" id="page-training">
+      <div class="ph"><div class="ph-eye">SESIÓN HOY</div><div class="ph-h">ENTRENAMIENTO <span id="trGoal" style="color:var(--r)">—</span></div></div>
+      <div class="adapt-b hidden" id="adaptB"><span id="adaptIco" style="font-size:20px">🧠</span><div id="adaptTxt">Rutina adaptada</div></div>
+      <div class="tr-lay">
+        <div style="background:var(--s2);padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:1px;text-transform:uppercase">EJERCICIOS</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;color:var(--r)"><span id="exDone">0</span>/6</div>
+          </div>
+          <div class="ex-grid" id="exGrid"></div>
+        </div>
+        <div>
+          <div class="timer-p">
+            <div class="timer-l">DESCANSO</div>
+            <div class="timer-d" id="timerD">01:30</div>
+            <div class="timer-btns">
+              <button class="tbtn go" onclick="startT()">▶ PLAY</button>
+              <button class="tbtn pa" onclick="pauseT()">⏸</button>
+              <button class="tbtn re" onclick="resetT()">↺</button>
+            </div>
+            <div class="pset-row">
+              <button class="pset" onclick="setT(60)">1:00</button>
+              <button class="pset" onclick="setT(90)">1:30</button>
+              <button class="pset" onclick="setT(120)">2:00</button>
+              <button class="pset" onclick="setT(180)">3:00</button>
+            </div>
+          </div>
+          <div style="background:var(--s2);padding:14px;border-top:2px solid rgba(255,26,26,.12)">
+            <div class="cc-h" style="margin-bottom:9px">LOG DE SERIES</div>
+            <div id="setsLog"><div class="empty-s" style="font-size:9px;padding:8px">Completa ejercicios para ver aquí</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STATS ══ -->
+    <div class="page" id="page-stats">
+      <div class="ph"><div class="ph-eye">ANALYTICS</div><div class="ph-h">ESTADÍSTICAS</div></div>
+      <div class="krow">
+        <div class="kpi"><div class="kpi-ico">⚖️</div><div class="kpi-v" id="sW">—</div><div class="kpi-l">PESO (KG)</div><div class="tag tag-b" id="sWD">—</div></div>
+        <div class="kpi"><div class="kpi-ico">🏋️</div><div class="kpi-v" id="sSess">0</div><div class="kpi-l">SESIONES</div><div class="tag tag-g">TOTALES</div></div>
+        <div class="kpi"><div class="kpi-ico">📈</div><div class="kpi-v" id="sAvg">—</div><div class="kpi-l">AVG KCAL/DÍA</div><div class="tag tag-r">7 DÍAS</div></div>
+        <div class="kpi"><div class="kpi-ico">🔥</div><div class="kpi-v" id="sStrk">1</div><div class="kpi-l">RACHA</div><div class="tag tag-g">ACTIVA</div></div>
+      </div>
+      <div class="st2">
+        <div class="cc"><div class="cc-h">CALORÍAS 7 DÍAS</div><div style="height:110px"><svg id="stSvg" width="100%" height="100%" viewBox="0 0 500 100" preserveAspectRatio="none"></svg></div></div>
+        <div class="cc"><div class="cc-h">ESTADO DE ÁNIMO</div><div id="moodDist" style="display:flex;flex-direction:column;gap:5px;margin-top:7px"></div></div>
+      </div>
+      <div class="st3">
+        <div class="cc"><div class="cc-h">TOP PROTEÍNAS</div><div id="topProt"></div></div>
+        <div class="cc"><div class="cc-h">LOGROS</div><div id="achiev"></div></div>
+        <div class="cc"><div class="cc-h">HEATMAP</div><div class="hm" id="hm"></div></div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="ph"><div class="ph-eye">MI CUENTA</div><div class="ph-h">PERFIL</div></div>
+      <div class="set-g">
+        <div class="set-b">
+          <div class="set-h">PERFIL ATLÉTICO</div>
+          <div class="g2" style="margin-bottom:11px">
+            <div class="field"><label>Meta</label><select id="pGoal"><option value="Perder grasa">PERDER GRASA</option><option value="Ganar masa muscular">GANAR MASA</option><option value="Recomposición corporal">RECOMPOSICIÓN</option><option value="Mejorar rendimiento">RENDIMIENTO</option></select></div>
+            <div class="field"><label>Nivel</label><select id="pLevel"><option value="Principiante">PRINCIPIANTE</option><option value="Intermedio">INTERMEDIO</option><option value="Avanzado">AVANZADO</option></select></div>
+            <div class="field"><label>Peso actual (kg)</label><input type="number" id="pW" placeholder="75"></div>
+            <div class="field"><label>Peso objetivo (kg)</label><input type="number" id="pGW" placeholder="70"></div>
+            <div class="field"><label>Calorías/día</label><input type="number" id="pKcal" placeholder="2200"></div>
+            <div class="field"><label>Edad</label><input type="number" id="pAge" placeholder="25"></div>
+          </div>
+          <div class="field" style="margin-bottom:11px"><label>Restricciones / alergias</label><input type="text" id="pRes" placeholder="Ej: sin lactosa, sin gluten..."></div>
+          <div id="femSec" class="hidden">
+            <div class="sep"></div>
+            <div class="set-h" style="color:var(--pu)">🌙 CICLO MENSTRUAL</div>
+            <div class="g2">
+              <div class="field"><label>Día del ciclo</label><input type="number" id="pCD" placeholder="14" min="1" max="35"></div>
+              <div class="field"><label>Duración ciclo</label><input type="number" id="pCL" placeholder="28"></div>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="set-h">CAMBIAR CONTRASEÑA</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+            <div class="field"><label>Contraseña actual</label><input type="password" id="cpCur" placeholder="Contraseña actual"></div>
+            <div class="field"><label>Nueva contraseña</label><input type="password" id="cpNew" placeholder="Nueva contraseña"></div>
+            <div id="cpMsg" class="hidden"></div>
+            <button class="btn btn-out" style="width:100%;font-size:13px;letter-spacing:1px;" onclick="doChangePass()">CAMBIAR CONTRASEÑA</button>
+          </div>
+          <div class="sep"></div>
+          <button class="btn btn-red" style="width:100%;font-size:15px;" onclick="saveProfile()">GUARDAR PERFIL</button>
+        </div>
+        <div>
+          <div class="set-b" style="margin-bottom:1px">
+            <div class="set-h">SUSCRIPCIÓN</div>
+            <div style="background:var(--rg2);border:1px solid var(--brd-r);padding:12px;margin-bottom:11px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;text-transform:uppercase" id="subPlan">—</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-top:2px" id="subSt">—</div>
+            </div>
+          </div>
+          <div class="set-b">
+            <div class="set-h">MI CÓDIGO REFERIDO</div>
+            <div class="ref-disp">
+              <div class="ref-lbl">TU CÓDIGO</div>
+              <div class="ref-code" id="myRef">—</div>
+              <div class="ref-sts">
+                <div><div class="rs-v" id="refU">0</div><div class="rs-l">REFERIDOS</div></div>
+                <div><div class="rs-v" id="refC">0</div><div class="rs-l">CRÉDITOS</div></div>
+              </div>
+            </div>
+            <button class="btn btn-out" style="width:100%;margin-top:9px;font-size:13px;letter-spacing:1px;" onclick="copyRef()">📋 COPIAR CÓDIGO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRAINER / ADMIN ══ -->
+    <div class="page" id="page-trainer">
+      <div class="ph">
+        <div class="ph-eye">PANEL DE CONTROL</div>
+        <div class="ph-h">DREXLER <span style="color:var(--r)">ADMIN</span></div>
+      </div>
+
+      <!-- KPIs Row -->
+      <div class="adm-kpi-row">
+        <div class="adm-kpi">
+          <div class="adm-kpi-v" id="trCl">—</div>
+          <div class="adm-kpi-l">Clientes Totales</div>
+          <div class="adm-kpi-d" id="trClD"></div>
+        </div>
+        <div class="adm-kpi">
+          <div class="adm-kpi-v" id="trAc">—</div>
+          <div class="adm-kpi-l">Suscripciones Activas</div>
+          <div class="adm-kpi-d" id="trAcD"></div>
+        </div>
+        <div class="adm-kpi">
+          <div class="adm-kpi-v" id="trRf">—</div>
+          <div class="adm-kpi-l">Referidos</div>
+        </div>
+        <div class="adm-kpi">
+          <div class="adm-kpi-v" id="trRev" style="color:var(--gr)">—</div>
+          <div class="adm-kpi-l">Revenue Est./mes</div>
+        </div>
+      </div>
+
+      <!-- Admin Tabs -->
+      <div class="adm-tabs">
+        <div class="adm-tab active" onclick="admTab('clients',this)">👥 CLIENTES</div>
+        <div class="adm-tab" onclick="admTab('routines',this)">📋 RUTINAS</div>
+        <div class="adm-tab" onclick="admTab('videos',this)">🎥 VIDEOS</div>
+        <div class="adm-tab" onclick="admTab('config',this)">⚙️ CONFIG AI</div>
+      </div>
+
+      <!-- TAB: CLIENTS -->
+      <div class="adm-section active" id="adm-clients">
+        <div class="tr-lay">
+          <div class="cl-list">
+            <div class="cl-hd">
+              <div class="cl-hd-t">ATLETAS</div>
+              <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub)" id="clCnt">0</span>
+            </div>
+            <div style="padding:8px;border-bottom:1px solid var(--brd);">
+              <input type="text" id="clSearch" placeholder="Buscar atleta..." oninput="filterClients(this.value)"
+                style="width:100%;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 10px;color:var(--txt);font-family:'Share Tech Mono',monospace;font-size:9px;outline:none;">
+            </div>
+            <div id="clBody"></div>
+          </div>
+          <div class="cl-det" id="clDet">
+            <div class="empty-s" style="min-height:200px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px">
+              <div style="font-size:38px;opacity:.3">◀</div>
+              <div>SELECCIONA UN ATLETA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ROUTINES -->
+      <div class="adm-section" id="adm-routines">
+        <div class="rt-builder">
+          <div class="card-h">CONSTRUCTOR DE RUTINAS</div>
+          <div class="g2" style="margin-bottom:16px">
+            <div class="field"><label>Nombre de la Rutina</label><input type="text" id="rtName" placeholder="Ej: Semana 1 — Fuerza Total"></div>
+            <div class="field"><label>Asignar a Cliente</label>
+              <select id="rtClient"><option value="">-- Todos los clientes --</option></select>
+            </div>
+          </div>
+          <div class="g3" style="margin-bottom:16px">
+            <div class="field"><label>Nivel</label>
+              <select id="rtLevel"><option>PRINCIPIANTE</option><option>INTERMEDIO</option><option>AVANZADO</option></select>
+            </div>
+            <div class="field"><label>Duración</label>
+              <select id="rtDur"><option>4 semanas</option><option>8 semanas</option><option>12 semanas</option></select>
+            </div>
+            <div class="field"><label>Tipo</label>
+              <select id="rtType"><option>HIPERTROFIA</option><option>FUERZA</option><option>PÉRDIDA DE GRASA</option><option>RESISTENCIA</option><option>MIXTO</option></select>
+            </div>
+          </div>
+
+          <!-- ── DÍAS ACTIVOS (cuáles días entrena este cliente) ── -->
+          <div class="blk-h">DÍAS QUE ENTRENA</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);margin-bottom:8px;line-height:1.5;">Marca los días activos. Los días sin marcar se muestran como DESCANSO al cliente.</div>
+          <div class="rt-day-tabs" id="rtDayTabs" style="margin-bottom:4px">
+            <div class="rt-day rt-active-toggle active" onclick="toggleTrainDay(this,'LUN')" data-day="LUN">LUN</div>
+            <div class="rt-day rt-active-toggle active" onclick="toggleTrainDay(this,'MAR')" data-day="MAR">MAR</div>
+            <div class="rt-day rt-active-toggle" onclick="toggleTrainDay(this,'MIÉ')" data-day="MIÉ">MIÉ</div>
+            <div class="rt-day rt-active-toggle active" onclick="toggleTrainDay(this,'JUE')" data-day="JUE">JUE</div>
+            <div class="rt-day rt-active-toggle" onclick="toggleTrainDay(this,'VIE')" data-day="VIE">VIE</div>
+            <div class="rt-day rt-active-toggle" onclick="toggleTrainDay(this,'SÁB')" data-day="SÁB">SÁB</div>
+            <div class="rt-day rt-active-toggle rt-rest" onclick="toggleTrainDay(this,'DOM')" data-day="DOM">DOM</div>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--sub2);margin-bottom:14px;">
+            <span style="color:var(--r)">■</span> ACTIVO &nbsp;|&nbsp; <span style="color:var(--sub3,#333)">■</span> DESCANSO
+          </div>
+
+          <!-- ── EJERCICIOS POR DÍA ── -->
+          <div class="blk-h">EJERCICIOS DEL DÍA</div>
+          <div id="rtDayLabel" style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);letter-spacing:2px;margin-bottom:10px;">DÍA: LUN</div>
+
+          <div id="rtExList" style="margin-bottom:12px;min-height:50px;"></div>
+          <button class="btn btn-ghost" style="width:100%;font-size:12px;letter-spacing:1px;margin-bottom:14px;" onclick="addExRow()">+ AÑADIR EJERCICIO</button>
+
+          <div class="field" style="margin-bottom:14px"><label>Notas del día (instrucciones al AI para este día)</label>
+            <textarea id="rtDayNotes" rows="3" placeholder="Ej: Día de piernas. Foco en cuadriceps. Descanso 90s entre series."></textarea>
+          </div>
+
+          <div class="sep"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-red" style="flex:1;font-size:14px;" onclick="saveRoutine()">💾 GUARDAR RUTINA</button>
+            <button class="btn btn-ghost" style="font-size:12px;letter-spacing:.5px;padding:10px 16px;" onclick="previewRoutine()">👁 PREVISUALIZAR</button>
+          </div>
+        </div>
+
+        <!-- ── WHATSAPP 5AM CONFIG ── -->
+        <div style="background:var(--s2);border:1px solid var(--brd);padding:16px;margin-top:14px;">
+          <div class="card-h" style="color:var(--gr);">📲 ENVÍO AUTOMÁTICO 5:00 AM</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);line-height:1.6;margin-bottom:12px;">
+            Cada día de entrenamiento activo, el AI genera y envía la rutina del día por WhatsApp a cada cliente a las 5:00 AM.<br>
+            El mensaje se adapta automáticamente según el ánimo registrado el día anterior.
+          </div>
+          <div class="g2" style="margin-bottom:12px">
+            <div class="field"><label>Hora de envío</label>
+              <select id="waTime" style="font-family:'Share Tech Mono',monospace;">
+                <option value="05:00">05:00 AM</option>
+                <option value="06:00">06:00 AM</option>
+                <option value="07:00">07:00 AM</option>
+              </select>
+            </div>
+            <div class="field"><label>Tono del mensaje</label>
+              <select id="waTone" style="font-family:'Share Tech Mono',monospace;">
+                <option value="motivador">💪 Motivador</option>
+                <option value="directo">⚡ Directo y corto</option>
+                <option value="suave">🧘 Suave y positivo</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:12px"><label>Mensaje base del coach (el AI personaliza el resto)</label>
+            <textarea id="waBase" rows="3" placeholder="Ej: Buenos días {{nombre}}! Hoy toca {{dia_tipo}}. Aquí está tu rutina de hoy..."></textarea>
+          </div>
+          <div style="background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.12);padding:10px 12px;margin-bottom:12px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--gr);margin-bottom:6px;letter-spacing:1px;">VARIABLES DISPONIBLES</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);line-height:1.8;">
+              {{nombre}} · {{dia}} · {{dia_tipo}} · {{ejercicios}} · {{series_total}} · {{animo_ayer}} · {{energia_ayer}}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-red" style="flex:1;font-size:13px;" onclick="saveWaConfig()">💾 GUARDAR CONFIG</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:10px 14px;" onclick="previewWaMsg()">👁 PREVIEW</button>
+          </div>
+          <div id="waMsgPreview" style="display:none;margin-top:12px;background:var(--s3);border-left:2px solid var(--gr);padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;"></div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div class="card-h">RUTINAS GUARDADAS</div>
+          <div id="rtSavedList" style="margin-top:8px">
+            <div class="empty-s">No hay rutinas guardadas. ¡Crea la primera arriba!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: VIDEOS -->
+      <div class="adm-section" id="adm-videos">
+        <div class="upload-zone" id="vidUpZone">
+          <input type="file" accept="video/*,image/*" multiple onchange="handleVidUpload(this)">
+          <div class="upload-zone-ico">🎥</div>
+          <div class="upload-zone-h">SUBIR VIDEO / IMAGEN DE EJERCICIO</div>
+          <div class="upload-zone-s">MP4, MOV, AVI — Máx 500MB · O imágenes GIF, JPG, PNG</div>
+          <div class="prog-bar-wrap" id="vidProgWrap"><div class="prog-bar" id="vidProg"></div></div>
+        </div>
+
+        <div class="g2" style="margin-bottom:14px">
+          <div class="field"><label>Nombre del ejercicio</label><input type="text" id="vidExName" placeholder="Ej: Sentadilla con barra"></div>
+          <div class="field"><label>Grupo muscular</label>
+            <select id="vidMuscle">
+              <option>PIERNA</option><option>PECHO</option><option>ESPALDA</option><option>HOMBROS</option>
+              <option>BÍCEPS</option><option>TRÍCEPS</option><option>ABDOMEN</option><option>GLÚTEOS</option><option>FULL BODY</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px"><label>Instrucciones del ejercicio (para el AI)</label>
+          <textarea id="vidInstr" rows="3" placeholder="Ej: Espalda recta, rodillas alineadas con pies, bajar hasta 90°..."></textarea>
+        </div>
+        <button class="btn btn-red" style="font-size:14px;margin-bottom:20px;" onclick="saveVidEntry()">📎 GUARDAR EJERCICIO EN BIBLIOTECA</button>
+
+        <div class="card-h">BIBLIOTECA DE EJERCICIOS</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;">
+          <button class="rt-day active" onclick="filterVids('todos',this)" id="vfAll">TODOS</button>
+          <button class="rt-day" onclick="filterVids('PIERNA',this)">PIERNA</button>
+          <button class="rt-day" onclick="filterVids('PECHO',this)">PECHO</button>
+          <button class="rt-day" onclick="filterVids('ESPALDA',this)">ESPALDA</button>
+          <button class="rt-day" onclick="filterVids('HOMBROS',this)">HOMBROS</button>
+        </div>
+        <div class="vid-grid" id="vidLibrary">
+          <div class="empty-s" style="grid-column:1/-1">Ningún video / ejercicio cargado aún.</div>
+        </div>
+      </div>
+
+      <!-- TAB: CONFIG AI -->
+      <div class="adm-section" id="adm-config">
+        <div style="background:var(--s2);border:1px solid var(--brd-r);border-left:3px solid var(--r);padding:20px;margin-bottom:14px">
+          <div class="blk-h" style="margin-top:0;font-size:13px">PROMPT GLOBAL DEL AI</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);margin-bottom:12px;line-height:1.6">
+            Este prompt es la <strong style="color:var(--txt)">personalidad base</strong> que todos los clientes recibirán. Define el tono, estilo y restricciones del coach.
+          </div>
+          <textarea class="pr-ed" id="gPrompt" rows="8" placeholder="Eres DREX AI, el Performance Coach de Drexler. Tu estilo es directo, motivacional y científico. Siempre adaptas las respuestas al nivel, estado emocional y datos físicos del atleta. No das diagnósticos médicos. Priorizas la seguridad y la progresión..."></textarea>
+          <button class="btn btn-red" style="margin-top:12px;font-size:13px;" onclick="saveGPrompt()">💾 GUARDAR PROMPT GLOBAL</button>
+        </div>
+
+        <div class="g2">
+          <div style="background:var(--s2);border:1px solid var(--brd);padding:18px">
+            <div class="blk-h" style="margin-top:0">CONFIGURACIÓN DE COMPORTAMIENTO</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-bottom:6px;letter-spacing:1px">IDIOMA DEL AI</div>
+                <select class="field" style="all:unset;width:100%;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:9px 12px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer;" id="aiLang">
+                  <option value="es">ESPAÑOL</option><option value="en">ENGLISH</option><option value="pt">PORTUGUÊS</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-bottom:6px;letter-spacing:1px">TONO DEL COACH</div>
+                <select style="all:unset;width:100%;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:9px 12px;color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer;" id="aiTone">
+                  <option value="motivacional">MOTIVACIONAL 🔥</option>
+                  <option value="tecnico">TÉCNICO 🧪</option>
+                  <option value="amigable">AMIGABLE 😊</option>
+                  <option value="estricto">ESTRICTO 💪</option>
+                </select>
+              </div>
+              <div class="field"><label>Restricciones globales</label><textarea rows="3" id="aiRestr" placeholder="Ej: No mencionar marcas. No dar diagnósticos. No aconsejar sin info del perfil..."></textarea></div>
+              <button class="btn btn-out" style="width:100%;font-size:13px;letter-spacing:1px;" onclick="saveBehavior()">GUARDAR CONFIGURACIÓN</button>
+            </div>
+          </div>
+          <div style="background:var(--s2);border:1px solid var(--brd);padding:18px">
+            <div class="blk-h" style="margin-top:0">VARIABLES DEL SISTEMA</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-bottom:12px;line-height:1.7">
+              Usa estas variables en tus prompts. El AI las reemplaza automáticamente:
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;nombre&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Nombre del cliente</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;peso&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Peso actual en kg</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;altura&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Estatura en cm</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;nivel&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Principiante / Intermedio / Avanzado</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;meta&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Meta de fitness del cliente</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;mood&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Estado de ánimo del día</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;energia&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Energía del día (1-10)</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--brd)"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;calorias&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Meta calórica diaria</span></div>
+              <div style="display:flex;gap:10px;align-items:center;padding:5px 0"><code style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--r);background:var(--rg2);padding:2px 6px;white-space:nowrap">&#123;&#123;fase_ciclo&#125;&#125;</code><span style="font-size:12px;color:var(--sub)">Fase menstrual (si aplica)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end page-trainer -->
+  </div><!-- end mw -->
+</div><!-- end mainApp -->
+
+<div id="toast"></div>
+
+<script>
+const API = window.location.hostname==='localhost'
+  ? 'http://localhost:3000/api'
+  : '/api';
+
+let token=localStorage.getItem('dc_token');
+let user=null;
+let chatHist=[];
+let diary=[];
+let totalKcal=0;
+let macros={p:0,c:0,f:0};
+let analyzed=null;
+let todayMood=null;
+let selMoodData=null;
+let selCycPhase=null;
+let selSyms=[];
+let exDoneN=0;
+let tSec=90,tRun=false,tInt=null;
+let actLog=[];
+let gPromptVal='';
+
+// ── URL reset token check
+const urlP=new URLSearchParams(window.location.search);
+if(urlP.get('token')){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('resetModal').classList.remove('hidden');
+}
+
+window.addEventListener('load',()=>{
+  setDate();
+  if(token) fetchMe().then(ok=>{ if(ok) enterApp(); else { localStorage.removeItem('dc_token'); localStorage.removeItem('dc_user_cache'); }});
+});
+
+function setDate(){
+  const d=new Date();
+  const D=['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'],M=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  document.getElementById('dtChip').textContent=`${D[d.getDay()]} ${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+async function fetchMe(){
+  if(token==='admin-temp-token'){
+    const cached=localStorage.getItem('dc_user_cache');
+    if(cached){user=JSON.parse(cached);return true;}
+  }
+  try{const r=await api('GET','auth/me');if(r.error)return false;user=r;return true;}catch{return false;}
+}
+
+// ════════════════════ APP ENTRY ════════════════════
+function enterApp(){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('authOverlay').classList.add('hidden');
+  updateUI();initDash();loadRef();
+  setTimeout(()=>{ if(!todayMood) openMoodCheck(); },1600);
+  setTimeout(checkSubGate, 800);
+  setTimeout(checkProfileCompletion, 1200);
+}
+
+function updateUI(){
+  if(!user)return;
+  document.getElementById('dName').textContent=user.name.split(' ')[0].toUpperCase();
+  document.getElementById('sbAv').textContent=user.name.charAt(0).toUpperCase();
+  document.getElementById('trGoal').textContent='· '+(user.goal||'').toUpperCase();
+  document.getElementById('sW').textContent=user.weight_kg||'—';
+  document.getElementById('sWD').textContent=user.goal_weight_kg?'META: '+user.goal_weight_kg+'KG':'—';
+  const plans={basic:'BÁSICO',pro:'PRO',elite:'ELITE'};
+  document.getElementById('subBadge').textContent='⭐ '+(plans[user.subscription_plan]||'SIN PLAN');
+  document.getElementById('subPlan').textContent=user.subscription_plan?'PLAN '+(plans[user.subscription_plan]||user.subscription_plan.toUpperCase()):'SIN SUSCRIPCIÓN';
+  document.getElementById('subSt').textContent=user.subscription_status==='active'?'✅ ACTIVO':'❌ INACTIVO';
+  if(user.role==='trainer') document.getElementById('trainerNav').classList.remove('hidden');
+  if(user.gender==='femenino'){ document.getElementById('femSec').classList.remove('hidden'); document.getElementById('cycSec').classList.remove('hidden'); }
+  fillProfForm();
+  addAct(`SESIÓN INICIADA · ${user.name.split(' ')[0].toUpperCase()}` ,'var(--r)');
+}
+
+function doLogout(){ localStorage.removeItem('dc_token'); localStorage.removeItem('dc_user_cache'); window.location.reload(); }
+
+// ════════════════════ AUTH ════════════════════
+function openLogin(p){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('loginModal').classList.remove('hidden');
+  document.getElementById('registerModal').classList.add('hidden');
+  document.getElementById('forgotModal').classList.add('hidden');
+  document.getElementById('resetModal').classList.add('hidden');
+}
+
+function openRegister(p){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('registerModal').classList.remove('hidden');
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('forgotModal').classList.add('hidden');
+  document.getElementById('resetModal').classList.add('hidden');
+  if(p){
+    const planNames={basic:'BÁSICO — $19/MES',pro:'PRO — $39/MES',elite:'ELITE — $69/MES'};
+    const badge=document.getElementById('r-plan-badge');
+    const nameEl=document.getElementById('r-plan-name');
+    if(badge&&nameEl){badge.style.display='block';nameEl.textContent=planNames[p]||p.toUpperCase();}
+  }
+}
+
+function openForgot(){document.getElementById('forgotModal').classList.remove('hidden');document.getElementById('loginModal').classList.add('hidden');}
+function closeAuth(){document.getElementById('authOverlay').classList.add('hidden');document.getElementById('landing').classList.remove('hidden');}
+function switchReg(){openRegister();}
+function switchLog(){document.getElementById('loginModal').classList.remove('hidden');document.getElementById('registerModal').classList.add('hidden');document.getElementById('forgotModal').classList.add('hidden');}
+
+async function doLogin(){
+  const btn=document.getElementById('loginBtn');
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  const errEl=document.getElementById('l-err');errEl.classList.add('hidden');
+  // ── ACCESO ADMIN TEMPORAL (remover en Etapa 2 con Supabase)
+  if(email==='drex@admin.com' && pass==='drex1234'){
+    user={id:'admin-local',name:'Drexler',email:'drex@admin.com',role:'trainer',subscription_status:'active',goal:'Rendimiento',level:'Avanzado',calories_target:2800};
+    token='admin-temp-token';
+    localStorage.setItem('dc_token',token);
+    localStorage.setItem('dc_user_cache',JSON.stringify(user));
+    enterApp();
+    toast('🔐 ACCESO ADMIN · MODO LOCAL','info');
+    return;
+  }
+  btn.innerHTML='<span class="spin"></span>';
+  const r=await api('POST','auth/login',{email,password:pass});
+  btn.innerHTML='ENTRAR';
+  if(r.error){errEl.textContent=r.error;errEl.className='err';return;}
+  token=r.token;user=r.user;localStorage.setItem('dc_token',token);enterApp();
+}
+
+async function doRegister(){
+  const btn=document.getElementById('regBtn');
+  const fname=document.getElementById('r-name').value.trim();
+  const lname=document.getElementById('r-lastname').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pass=document.getElementById('r-pass').value;
+  const whatsapp=document.getElementById('r-whatsapp').value.trim()||null;
+  const refcode=document.getElementById('r-ref').value.trim();
+  const name=(fname+' '+lname).trim();
+  const errEl=document.getElementById('r-err');errEl.classList.add('hidden');
+  if(!fname||!email||!pass){errEl.textContent='Nombre, email y contraseña son requeridos';errEl.className='err';return;}
+  if(pass.length<6){errEl.textContent='La contraseña debe tener mínimo 6 caracteres';errEl.className='err';return;}
+  btn.innerHTML='<span class="spin"></span>';
+  const r=await api('POST','auth/register',{email,password:pass,name,referral_code:refcode});
+  btn.innerHTML='▶ CREAR MI CUENTA';
+  if(r.error){errEl.textContent=r.error;errEl.className='err';return;}
+  token=r.token;user=r.user;localStorage.setItem('dc_token',token);
+  if(whatsapp) await api('PUT','auth/profile',{whatsapp});
+  user={...user,whatsapp};
+  enterApp();
+  if(r.discount_applied) toast(`🎉 ${r.discount_applied}% DE DESCUENTO APLICADO`,'success');
+}
+
+async function valRef(code){
+  const el=document.getElementById('ref-st');
+  if(code.length<6){el.classList.add('hidden');return;}
+  const r=await api('GET',`referrals/validate/${code.toUpperCase()}`);
+  el.classList.remove('hidden');
+  if(r.valid){el.textContent=`✓ VÁLIDO — ${r.discount_pct}% DESCUENTO`;el.className='ref-st ok';}
+  else{el.textContent='✗ CÓDIGO INVÁLIDO';el.className='ref-st bad';}
+}
+
+async function doForgot(){
+  const btn=document.getElementById('fpBtn');
+  const email=document.getElementById('fp-email').value;
+  const msgEl=document.getElementById('fp-msg');msgEl.classList.add('hidden');
+  if(!email){msgEl.textContent='Ingresa tu email';msgEl.className='err';return;}
+  btn.innerHTML='<span class="spin"></span>';
+  const r=await api('POST','auth/forgot-password',{email});
+  btn.innerHTML='ENVIAR INSTRUCCIONES';
+  if(r.error){msgEl.textContent=r.error;msgEl.className='err';}
+  else{msgEl.textContent='✓ REVISA TU EMAIL';msgEl.className='suc';}
+}
+
+async function doReset(){
+  const btn=document.getElementById('rpBtn');
+  const pass=document.getElementById('rp-pass').value,pass2=document.getElementById('rp-pass2').value;
+  const msgEl=document.getElementById('rp-msg');msgEl.classList.add('hidden');
+  if(pass!==pass2){msgEl.textContent='Las contraseñas no coinciden';msgEl.className='err';return;}
+  if(pass.length<6){msgEl.textContent='Mínimo 6 caracteres';msgEl.className='err';return;}
+  btn.innerHTML='<span class="spin"></span>';
+  const r=await api('POST','auth/reset-password',{token:urlP.get('token'),password:pass});
+  btn.innerHTML='GUARDAR NUEVA CONTRASEÑA';
+  if(r.error){msgEl.textContent=r.error;msgEl.className='err';}
+  else{msgEl.textContent='✓ CONTRASEÑA ACTUALIZADA';msgEl.className='suc';setTimeout(()=>window.location.href='/',2000);}
+}
+
+
+
+// ════════════════════ MOOD ════════════════════
+function openMoodCheck(){document.getElementById('moodOverlay').classList.remove('hidden');}
+function selMood(mood,emoji,el){selMoodData={mood,emoji};document.querySelectorAll('.mb').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+function selCyc(el,phase){selCycPhase=phase;document.querySelectorAll('#cycChips .chip').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function togSym(el,sym){const i=selSyms.indexOf(sym);if(i>-1){selSyms.splice(i,1);el.classList.remove('sel');}else{selSyms.push(sym);el.classList.add('sel');}}
+
+async function saveMood(){
+  if(!selMoodData){toast('Selecciona tu estado de ánimo','error');return;}
+  const energy=parseInt(document.getElementById('eS').value),stress=parseInt(document.getElementById('stS').value);
+  const note=document.getElementById('mNote').value;
+  todayMood={...selMoodData,energy,stress,cyclePhase:selCycPhase,symptoms:selSyms,note};
+  document.getElementById('moodOverlay').classList.add('hidden');
+  updateMoodUI();
+  await api('POST','mood/checkin',{mood:todayMood.mood,energy,stress,cycle_phase:selCycPhase,symptoms:selSyms,note});
+  setTimeout(sendMoodMsg,400);
+  initExs();
+}
+function skipMood(){document.getElementById('moodOverlay').classList.add('hidden');initExs();}
+
+function updateMoodUI(){
+  if(!todayMood)return;
+  const mm={motivado:{e:'🔥',l:'MOTIVADO'},cansado:{e:'😴',l:'CANSADO'},estresado:{e:'😤',l:'ESTRESADO'},triste:{e:'😔',l:'BAJO ÁNIMO'}};
+  const m=mm[todayMood.mood]||{e:'⚡',l:todayMood.mood.toUpperCase()};
+  document.getElementById('mBIcon').textContent=m.e;
+  document.getElementById('mBTitle').textContent=`ESTADO: ${m.l} · ENERGÍA ${todayMood.energy}/10`;
+  document.getElementById('mBSub').textContent='RUTINA Y NUTRICIÓN ADAPTADAS ✓';
+  document.getElementById('kMood').textContent=m.e;
+  document.getElementById('kMoodD').textContent=`ENERGÍA ${todayMood.energy}/10`;
+  document.getElementById('moodCtx').classList.remove('hidden');
+  document.getElementById('mCtxE').textContent=m.e;
+  document.getElementById('mCtxL').textContent=m.l;
+  document.getElementById('mCtxEn').textContent=todayMood.energy;
+}
+
+// ════════════════════ DASHBOARD ════════════════════
+function initDash(){drawCalChart();initWeekStrip();initStats();
+  addAct(`META: ${(user?.goal||'—').toUpperCase()}`,'var(--bl)');
+}
+function addAct(t,c='var(--sub)'){actLog.unshift({t,c,time:fmtT()});if(actLog.length>6)actLog=actLog.slice(0,6);const f=document.getElementById('actFeed');f.innerHTML='';actLog.forEach(a=>{f.innerHTML+=`<div class="act-item"><div class="act-dot" style="background:${a.c}"></div><div><div class="act-t">${a.t}</div><div class="act-time">${a.time}</div></div></div>`;});}
+
+function drawCalChart(){
+  const svg=document.getElementById('calSvg'),target=user?.calories_target||2200;
+  const days=['L','M','X','J','V','S','D'];
+  const data=Array.from({length:7},(_,i)=>i<6?Math.round(target*(.78+Math.random()*.32)):totalKcal);
+  const W=500,H=120,pad=20;const min=Math.min(...data)*.85,max=Math.max(...data)*1.12;
+  const x=i=>pad+(i/(data.length-1))*(W-pad*2),y=v=>H-pad-((v-min)/(max-min))*(H-pad*2),ty=y(target);
+  svg.innerHTML=`<defs><linearGradient id="rg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF1A1A" stop-opacity=".12"/><stop offset="100%" stop-color="#FF1A1A" stop-opacity="0"/></linearGradient></defs><line x1="${pad}" y1="${ty}" x2="${W-pad}" y2="${ty}" stroke="rgba(255,26,26,.18)" stroke-width="1" stroke-dasharray="5,4"/>`;
+  let aD=`M ${x(0)},${H-pad}`;data.forEach((v,i)=>aD+=` L ${x(i)},${y(v)}`);aD+=` L ${x(6)},${H-pad} Z`;
+  const area=document.createElementNS('http://www.w3.org/2000/svg','path');area.setAttribute('d',aD);area.setAttribute('fill','url(#rg)');svg.appendChild(area);
+  let lD=`M ${x(0)},${y(data[0])}`;data.forEach((v,i)=>i>0&&(lD+=` L ${x(i)},${y(v)}`));
+  const line=document.createElementNS('http://www.w3.org/2000/svg','path');line.setAttribute('d',lD);line.setAttribute('fill','none');line.setAttribute('stroke','var(--r)');line.setAttribute('stroke-width','2');svg.appendChild(line);
+  data.forEach((v,i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','rect');const sz=i===6?6:4;
+    c.setAttribute('x',x(i)-sz/2);c.setAttribute('y',y(v)-sz/2);c.setAttribute('width',sz);c.setAttribute('height',sz);
+    c.setAttribute('fill',i===6?'var(--r)':'rgba(255,26,26,.5)');c.setAttribute('transform',`rotate(45,${x(i)},${y(v)})`);svg.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',x(i));t.setAttribute('y',H-4);t.setAttribute('text-anchor','middle');t.setAttribute('fill','rgba(80,80,80,.7)');t.setAttribute('font-family',"'Share Tech Mono',monospace");t.setAttribute('font-size','7');t.textContent=days[i];svg.appendChild(t);
+  });
+}
+
+function initWeekStrip(){
+  const days=['L','M','X','J','V','S','D'],c=document.getElementById('wkStrip');c.innerHTML='';
+  const today=new Date().getDay();
+  days.forEach((d,i)=>{const v=Math.random(),h=Math.round(v*38),act=(i+1)%7===today%7;
+    c.innerHTML+=`<div class="dc"><div class="dc-bw"><div class="dc-b" style="height:${h}px;background:${act?'var(--r)':'rgba(255,26,26,.18)'}"></div></div><div class="dc-l" style="color:${act?'var(--r)':'var(--sub2)'}">${d}</div><div style="width:4px;height:4px;transform:rotate(45deg);background:${v>.5?'var(--gr)':'var(--sub2)'}"></div></div>`;
+  });
+}
+
+function initStats(){
+  const wData=Array.from({length:12},(_,i)=>({m:['E','F','M','A','M','J','J','A','S','O','N','D'][i],w:Math.round(70+Math.random()*15-i*.3),b:Math.round(18+Math.random()*8-i*.2)}));
+  document.getElementById('stW').textContent=(user?.weight_kg||70)+'kg';
+  document.getElementById('stB').textContent=Math.round((user?.weight_kg||70)/((user?.height_cm||170)/100)**2)+'%';
+  const hm=document.getElementById('hm');if(hm){hm.innerHTML='';Array.from({length:28}).forEach((_,i)=>{const v=Math.random();hm.innerHTML+=`<div class="hm-c" style="background:rgba(255,26,26,${(v*.7+.1).toFixed(2)})"></div>`;});}
+  const wg=document.getElementById('stWGraph');if(wg){const W=300,H=80,pad=10;const ws=wData.map(d=>d.w);const min=Math.min(...ws)-2,max=Math.max(...ws)+2;const px=i=>pad+(i/(wData.length-1))*(W-pad*2),py=v=>H-pad-((v-min)/(max-min))*(H-pad*2);let ld=`M ${px(0)},${py(ws[0])}`;ws.forEach((v,i)=>i>0&&(ld+=` L ${px(i)},${py(v)}`));wg.innerHTML=`<polyline points="${ws.map((v,i)=>`${px(i)},${py(v)}`).join(' ')}" fill="none" stroke="var(--r)" stroke-width="2"/>`;}
+}
+
+// ════════════════════ TRAINING ════════════════════
+// Map JS day index to routine day keys
+const DAY_MAP = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+
+function getTodayRoutineExs(){
+  const todayKey = DAY_MAP[new Date().getDay()];
+  // Find the most recent routine assigned to this client (or all clients)
+  const saved = JSON.parse(localStorage.getItem('drex_routines')||'[]');
+  // Prefer client-specific, fallback to general
+  const clientRoutines = saved.filter(r=>r.client===user?.id||r.client==='');
+  const routine = clientRoutines[clientRoutines.length-1]; // most recent
+  if(!routine) return {exs:[], todayKey, isRestDay:true, dayNotes:''};
+  const activeDays = routine.activeDays || ['LUN','MAR','MIÉ','JUE','VIE'];
+  if(!activeDays.includes(todayKey)) return {exs:[], todayKey, isRestDay:true, dayNotes:''};
+  const dayExs = (routine.days[todayKey]||[]).map(e=>({
+    name: e.name,
+    sets: e.sets||'4',
+    reps: e.reps||'10-12',
+    rest: e.rest||'90s',
+    tags: [routine.type||'ENTRENAMIENTO'],
+    note: e.notes||''
+  }));
+  return {exs: dayExs, todayKey, isRestDay: false, dayNotes: routine.dayNotes?.[todayKey]||''};
+}
+
+function getRoutine(){
+  const {exs: baseExs, todayKey, isRestDay, dayNotes} = getTodayRoutineExs();
+
+  if(isRestDay){
+    return {exs:[], banner:{ico:'😴', txt:`HOY ES DÍA DE DESCANSO · ${todayKey} · Recuperación activa recomendada`, col:'var(--bl)'}, isRestDay:true};
+  }
+  if(!baseExs.length){
+    return {exs:[], banner:{ico:'📋', txt:'Drex aún no ha asignado rutina para este día', col:'var(--sub)'}, isRestDay:false};
+  }
+
+  if(!todayMood) return {exs:baseExs, banner:null, isRestDay:false};
+
+  let exs=[...baseExs], banner=null;
+  if(todayMood.energy<=3||todayMood.mood==='cansado'){
+    exs=baseExs.slice(0,Math.max(3,Math.ceil(baseExs.length*.6))).map(e=>({...e,sets:'3'}));
+    banner={ico:'😴',txt:`Energía baja (${todayMood.energy}/10) · Volumen reducido · Escucha tu cuerpo`,col:'var(--bl)'};
+  } else if(todayMood.mood==='motivado'&&todayMood.energy>=7){
+    exs=baseExs.map(e=>({...e,sets: String(parseInt(e.sets||4)+1)}));
+    banner={ico:'🔥',txt:`Energía alta (${todayMood.energy}/10) · Volumen aumentado · ¡Rompe récords!`,col:'var(--r)'};
+  } else if(todayMood.mood==='estresado'){
+    banner={ico:'😤',txt:`Estrés detectado · El ejercicio reduce cortisol · Respira entre series`,col:'var(--or)'};
+  }
+  if(todayMood.cyclePhase==='menstrual'){
+    exs=baseExs.filter(e=>['CARDIO','MOVILIDAD','CORE'].some(t=>e.tags.includes(t)));
+    if(!exs.length) exs=baseExs.slice(0,3).map(e=>({...e,sets:'2',reps:'12',rest:'60s'}));
+    banner={ico:'🌙',txt:'FASE MENSTRUAL · Intensidad adaptada · Escucha tu cuerpo',col:'var(--pu)'};
+  }
+  return {exs, banner, isRestDay:false};
+}
+
+function initExs(){
+  const {exs, banner, isRestDay} = getRoutine();
+  const todayKey = DAY_MAP[new Date().getDay()];
+
+  // Update page header with today's day
+  const dayLabel = document.getElementById('trGoal');
+  if(dayLabel) dayLabel.textContent = `· ${todayKey}`;
+
+  const ab=document.getElementById('adaptB');
+  if(banner&&ab){ab.classList.remove('hidden');document.getElementById('adaptIco').textContent=banner.ico;document.getElementById('adaptTxt').textContent=banner.txt;ab.style.borderLeftColor=banner.col;}
+  else if(ab){ab.classList.add('hidden');}
+
+  const grid=document.getElementById('exGrid');
+  grid.innerHTML='';
+  exDoneN=0;
+  document.getElementById('exDone').textContent='0';
+  document.getElementById('kEx').textContent=`0/${exs.length}`;
+  document.getElementById('kExD').textContent='0% completado';
+
+  if(isRestDay){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;background:var(--s2);">
+      <div style="font-size:40px;margin-bottom:12px">😴</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">DÍA DE DESCANSO</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);margin-top:8px;line-height:1.8;">El descanso es parte del entrenamiento.<br>Hidratación · Sueño · Recuperación activa.</div>
+    </div>`;
+    return;
+  }
+
+  if(!exs.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;padding:40px 20px;text-align:center;background:var(--s2);">
+      <div style="font-size:32px;margin-bottom:12px;opacity:.3">🏋️</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--sub)">Sin ejercicios para hoy</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub2);margin-top:6px;">Drex subirá tu rutina pronto</div>
+    </div>`;
+    return;
+  }
+
+  window._currentExs = exs;
+  exs.forEach((ex,i)=>{
+    const d=document.createElement('div');
+    d.className='ex-c'; d.id='ex-'+i;
+    d.innerHTML=`
+      <div class="ex-num">${String(i+1).padStart(2,'0')} ·</div>
+      <div class="ex-ck" id="ck-${i}"></div>
+      <div class="ex-nm">${ex.name}</div>
+      <div class="ex-sets">${ex.sets} SERIES × ${ex.reps} · REST ${ex.rest}</div>
+      <div class="ex-tags">${ex.tags.map(t=>`<span class="xt xt-r">${t}</span>`).join('')}</div>
+      ${ex.note?`<div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-top:6px;line-height:1.5;">${ex.note}</div>`:''}`;
+    d.onclick=()=>togEx(i, exs.length);
+    grid.appendChild(d);
+  });
+}
+
+function togEx(i, total){
+  const c=document.getElementById('ex-'+i),ck=document.getElementById('ck-'+i);
+  if(!c)return;
+  const done=c.classList.toggle('done');
+  ck.textContent=done?'✓':'';
+  exDoneN=document.querySelectorAll('.ex-c.done').length;
+  const tot = total||document.querySelectorAll('.ex-c').length;
+  document.getElementById('exDone').textContent=exDoneN;
+  document.getElementById('kEx').textContent=`${exDoneN}/${tot}`;
+  document.getElementById('kExD').textContent=`${Math.round(exDoneN/tot*100)}% completado`;
+  if(done) addAct(`✓ ${c.querySelector('.ex-nm').textContent}`,'var(--gr)');
+}
+
+let tInt2;
+function startT(){if(tRun)return;tRun=true;tInt2=setInterval(()=>{if(tSec>0){tSec--;updT();}else{clearInterval(tInt2);tRun=false;toast('⏱️ ¡DESCANSO COMPLETADO!','success');}},1000);}
+function pauseT(){clearInterval(tInt2);tRun=false;}
+function resetT(){clearInterval(tInt2);tRun=false;tSec=90;updT();}
+function setT(s){clearInterval(tInt2);tRun=false;tSec=s;updT();}
+function updT(){const m=Math.floor(tSec/60),s=tSec%60;document.getElementById('timerD').textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;}
+
+// ════════════════════ CHAT ════════════════════
+function addCoachB(t){
+  const m=document.createElement('div');m.className='msg coach';
+  m.innerHTML=`<div class="msg-av">DC</div><div class="msg-b">${md(t)}<div class="msg-time">${fmtT()}</div></div>`;
+  document.getElementById('msgs').appendChild(m);scrollMsgs();
+}
+function addUserB(t){
+  const m=document.createElement('div');m.className='msg user';
+  m.innerHTML=`<div class="msg-b">${esc(t)}<div class="msg-time">${fmtT()}</div></div>`;
+  document.getElementById('msgs').appendChild(m);scrollMsgs();
+}
+function showTyp(){const t=document.createElement('div');t.className='msg coach';t.id='typ';t.innerHTML='<div class="msg-av">DC</div><div class="msg-b"><div class="typing"><span></span><span></span><span></span></div></div>';document.getElementById('msgs').appendChild(t);scrollMsgs();}
+function hideTyp(){document.getElementById('typ')?.remove();}
+function scrollMsgs(){const m=document.getElementById('msgs');m.scrollTop=m.scrollHeight;}
+function hKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function aR(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+function buildSys(){
+  const mo=todayMood?`\n- Estado: ${todayMood.mood} | Energía: ${todayMood.energy}/10 | Estrés: ${todayMood.stress}/10${todayMood.note?'\n- Nota: '+todayMood.note:''}`:'';
+  const d=diary.length?'\n- Comidas hoy: '+diary.map(m=>`${m.name}(${m.kcal}kcal)`).join(', '):'';
+  const fem=user?.gender==='femenino'?'\n\nCLIENTE FEMENINA: adapta por ciclo menstrual. Período=baja intensidad. Folicular=aumentar. Ovulación=máximo. Lútea=moderado.':'';
+  const tp=user?.trainer_prompt||gPromptVal||'';
+  return `Eres DREX AI, el Performance Coach de Drexler. Directo, honesto, motivador y profesional.\n\nPERFIL:\n- Nombre: ${user?.name} | Meta: ${user?.goal} | Nivel: ${user?.level}\n- Género: ${user?.gender} | Calorías objetivo: ${user?.calories_target||2200}/día\n- Calorías hoy: ${totalKcal} kcal | Restricciones: ${user?.restrictions||'Ninguna'}${mo}${d}\n${tp?'\nINSTRUCCIONES DREXLER:\n'+tp:''}${fem}\n\nREGLAS:\n• Adapta SIEMPRE al estado y energía\n• Energía ≤3 o cansado: baja intensidad\n• Ciclo activo: adapta por fase\n• Dolor agudo: parar y consultar\n• NO medicamentos\n• Máximo 3 párrafos, **negritas** y emojis\n• Termina con pregunta motivadora\n• Responde en español, tono directo y empoderador`;
+}
+function sQ(t){document.getElementById('msgI').value=t;sendMsg();}
+
+async function sendMoodMsg(){
+  if(!todayMood)return;
+  const n=user?.name?.split(' ')[0]?.toUpperCase()||'ATLETA';
+  const msgs={motivado:`🔥 ${n}! ENERGÍA ${todayMood.energy}/10 HOY. Tu rutina de alta intensidad está lista. Sin excusas. ¿Por dónde empezamos?`,cansado:`${n}. Energía baja (${todayMood.energy}/10). Ajusté tu rutina para recuperación activa. El movimiento suave igual cuenta. ¿Cómo te sientes físicamente?`,estresado:`Estrés al ${todayMood.stress}/10. El ejercicio reduce el cortisol. No es opcional hoy. ¿Listo para liberar tensión?`,triste:`Sé que no es tu mejor momento. Pero estás aquí, y eso ya es ganar. Las endorfinas son reales. Empezamos suave. ¿Qué quieres hacer hoy?`};
+  const cm={menstrual:`🌙 FASE MENSTRUAL. Reemplacé tu rutina por ejercicio suave. Tu cuerpo lo necesita ahora. ¿Tienes dolor hoy?`,folicular:`🌱 FASE FOLICULAR — energía subiendo. Momento ideal para intensidad moderada-alta. ¿Lista?`,ovulacion:`✨ PEAK DE OVULACIÓN. Estás en tu máximo de fuerza. Hoy es el día para romper récords. ¿Empezamos?`,lutea:`🌙 FASE LÚTEA. La bajada de energía es hormonal y normal. Ajusté intensidad. ¿Cómo te sientes?`};
+  let msg=todayMood.cyclePhase&&cm[todayMood.cyclePhase]?cm[todayMood.cyclePhase]:msgs[todayMood.mood]||'';
+  if(msg){chatHist.push({role:'assistant',content:msg});addCoachB(msg);}
+}
+
+async function handleChatPic(input){
+  const file=input.files[0];if(!file)return;
+  const b64=await toB64(file);
+  addUserB('📸 [Foto de comida]');
+  showTyp();
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSys(),messages:[...chatHist.slice(-6),{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type,data:b64.split(',')[1]}},{type:'text',text:'Analiza esta comida: calorías, macros y si es buena para mi meta.'}]}]})});
+    const data=await r.json();hideTyp();
+    const reply=data.content?.map(b=>b.text||'').join('')||'No pude analizar la imagen.';
+    chatHist.push({role:'assistant',content:reply});addCoachB(reply);
+  }catch(e){hideTyp();addCoachB('⚠️ ERROR AL ANALIZAR IMAGEN.');}
+}
+
+// ════════════════════ NUTRITION ════════════════════
+async function handleFoodPic(input){
+  const file=input.files[0];if(!file)return;
+  // Show analyzing state immediately, hide drop zone
+  document.getElementById('dropZ').style.display='none';
+  document.getElementById('anState').style.display='block';
+  document.getElementById('arRes').style.display='none';
+  // Auto-analyze
+  await analyzeFood(file);
+  // Reset input so same file can be uploaded again
+  input.value='';
+  setTimeout(()=>{
+    document.getElementById('anState').style.display='none';
+    document.getElementById('dropZ').style.display='';
+  }, 3500);
+}
+
+async function analyzeFood(file){
+  if(!file) return;
+  try{
+    const b64=await toB64(file);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type,data:b64.split(',')[1]}},{type:'text',text:'Analiza esta comida. Responde SOLO con JSON sin markdown: {"name":"nombre del alimento en español","kcal":numero,"protein":numero,"carbs":numero,"fat":numero,"description":"recomendación breve de 1 oración para el objetivo fitness"}'}]}]})});
+    const data=await r.json();
+    const raw=data.content?.map(b=>b.text||'').join('')||'{}';
+    const j=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    // Show result flash
+    document.getElementById('arK').textContent=j.kcal||'—';
+    document.getElementById('arP').textContent=(j.protein||'—')+'g';
+    document.getElementById('arC').textContent=(j.carbs||'—')+'g';
+    document.getElementById('arF').textContent=(j.fat||'—')+'g';
+    document.getElementById('arTxt').textContent=j.description||'';
+    document.getElementById('anState').style.display='none';
+    document.getElementById('arRes').style.display='block';
+    // Auto-save to diary
+    diary.push({name:j.name||'Comida',kcal:j.kcal||0,p:j.protein||0,c:j.carbs||0,f:j.fat||0});
+    totalKcal+=j.kcal||0; macros.p+=j.protein||0; macros.c+=j.carbs||0; macros.f+=j.fat||0;
+    updateMacs(); updateMealLog(); updateDonut(); updateRing();
+    addAct(`🍽️ ${j.name||'Comida'}  ${j.kcal}kcal`,'var(--or)');
+    toast(`✅ ${j.name||'Comida'} · ${j.kcal}kcal guardado`,'success');
+    // Auto-hide result after 3.5s
+    setTimeout(()=>{ document.getElementById('arRes').style.display='none'; }, 3500);
+  }catch(e){
+    document.getElementById('anState').style.display='none';
+    document.getElementById('dropZ').style.display='';
+    toast('⚠️ Error al analizar imagen. Intenta de nuevo.','error');
+  }
+}
+
+function updateMacs(){
+  const t=user?.calories_target||2200,pT=Math.round(t*.18/4),cT=Math.round(t*.5/4),fT=Math.round(t*.32/9);
+  document.getElementById('kKcal').textContent=totalKcal;document.getElementById('kKcalD').textContent=`${Math.max(0,t-totalKcal)} RESTANTES`;
+  document.getElementById('mP').textContent=`${macros.p}/${pT}g`;document.getElementById('mC').textContent=`${macros.c}/${cT}g`;document.getElementById('mF').textContent=`${macros.f}/${fT}g`;
+  setTimeout(()=>{document.getElementById('mfP').style.width=Math.min(100,macros.p/pT*100)+'%';document.getElementById('mfC').style.width=Math.min(100,macros.c/cT*100)+'%';document.getElementById('mfF').style.width=Math.min(100,macros.f/fT*100)+'%';},50);
+}
+
+function updateMealLog(){
+  const icons=['🍳','🥗','🍗','🥩','🐟','🥦','🍎','🥤','🫐','🍚'];
+  document.getElementById('mealTotal').textContent=`${totalKcal} KCAL`;
+  document.getElementById('mealLog').innerHTML=diary.map((m,i)=>`<div class="meal-row"><div class="meal-ico">${icons[i%icons.length]}</div><div style="flex:1"><div class="meal-nm">${m.name.toUpperCase()}</div><div class="meal-t">P:${m.p}g C:${m.c}g G:${m.f}g</div></div><div class="meal-k">${m.kcal}</div></div>`).join('');
+  document.getElementById('diaryS').innerHTML=diary.map(m=>`<div class="di-row"><span style="font-weight:600;font-size:11px">${m.name.toUpperCase()}</span><span class="di-k">${m.kcal}</span></div>`).join('');
+}
+
+function updateDonut(){
+  const total=(macros.p*4)+(macros.c*4)+(macros.f*9)||1,circ=409;
+  const pp=(macros.p*4/total)*circ,pc=(macros.c*4/total)*circ,pf=(macros.f*9/total)*circ;
+  document.getElementById('dp').setAttribute('stroke-dasharray',`${pp} ${circ-pp}`);
+  const rC=-90+(pp/circ*360);document.getElementById('dc').style.transform=`rotate(${rC}deg)`;document.getElementById('dc').style.transformOrigin='100px 100px';document.getElementById('dc').setAttribute('stroke-dasharray',`${pc} ${circ-pc}`);
+  const rF=rC+(pc/circ*360);document.getElementById('df').style.transform=`rotate(${rF}deg)`;document.getElementById('df').style.transformOrigin='100px 100px';document.getElementById('df').setAttribute('stroke-dasharray',`${pf} ${circ-pf}`);
+  document.getElementById('donutK').textContent=totalKcal;
+}
+
+function updateRing(){
+  const t=user?.calories_target||2200,pct=Math.min(1,totalKcal/t),circ=176;
+  document.getElementById('ringC').setAttribute('stroke-dashoffset',circ-(pct*circ));document.getElementById('ringV').textContent=totalKcal;
+}
+
+// ════════════════════ SETTINGS ════════════════════
+function fillProfForm(){
+  if(!user)return;
+  [['pGoal','goal'],['pLevel','level'],['pW','weight_kg'],['pGW','goal_weight_kg'],['pKcal','calories_target'],['pAge','age'],['pRes','restrictions'],['pCD','cycle_day'],['pCL','cycle_length']].forEach(([id,k])=>{const el=document.getElementById(id);if(el&&user[k])el.value=user[k];});
+}
+
+async function saveProfile(){
+  const payload={goal:document.getElementById('pGoal').value,level:document.getElementById('pLevel').value,weight_kg:parseFloat(document.getElementById('pW').value)||null,goal_weight_kg:parseFloat(document.getElementById('pGW').value)||null,calories_target:parseInt(document.getElementById('pKcal').value)||2200,age:parseInt(document.getElementById('pAge').value)||null,restrictions:document.getElementById('pRes').value,cycle_day:parseInt(document.getElementById('pCD')?.value)||null,cycle_length:parseInt(document.getElementById('pCL')?.value)||28};
+  const r=await api('PUT','auth/profile',payload);
+  if(r.error){toast('ERROR: '+r.error,'error');return;}
+  user={...user,...payload};document.getElementById('ringG').textContent=payload.calories_target||2200;document.getElementById('sW').textContent=payload.weight_kg||'—';
+  toast('✅ PERFIL GUARDADO','success');
+  checkProfileCompletion();
+}
+
+async function loadRef(){
+  const r=await api('GET','referrals/my-code');
+  if(r.code){document.getElementById('myRef').textContent=r.code;document.getElementById('refU').textContent=r.uses||0;document.getElementById('refC').textContent=r.credits||0;}
+}
+function copyRef(){const code=document.getElementById('myRef').textContent;if(code==='—')return;navigator.clipboard?.writeText(code).then(()=>toast('📋 COPIADO: '+code,'success'));}
+
+async function doChangePass(){
+  const cur=document.getElementById('cpCur').value,nw=document.getElementById('cpNew').value;
+  const msgEl=document.getElementById('cpMsg');msgEl.classList.add('hidden');
+  if(!cur||!nw){msgEl.textContent='Completa ambos campos';msgEl.className='err';return;}
+  const r=await api('POST','auth/change-password',{current_password:cur,new_password:nw});
+  if(r.error){msgEl.textContent=r.error;msgEl.className='err';}
+  else{msgEl.textContent='✓ CONTRASEÑA CAMBIADA';msgEl.className='suc';}
+}
+
+// ════════════════════ NAVIGATION ════════════════════
+function goPage(pg,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+pg)?.classList.add('active');el?.classList.add('active');
+  const titles={dashboard:'DASHBOARD',chat:'AI COACH',nutrition:'NUTRICIÓN',training:'ENTRENAMIENTO',stats:'ESTADÍSTICAS',settings:'PERFIL',trainer:'TRAINER'};
+  document.getElementById('pgTitle').textContent=titles[pg]||pg.toUpperCase();
+  if(pg==='chat'&&document.getElementById('msgs').children.length===0){
+    addCoachB(`${user?.name?.split(' ')[0]?.toUpperCase()||'ATLETA'}. Soy **DREX AI**, tu Performance Coach. Aquí para guiarte en entrenamiento, nutrición y rendimiento. Sin excusas. ¿Empezamos? 💪`);
+  }
+  if(pg==='training'&&document.getElementById('exGrid').children.length===0) initExs();
+  if(pg==='trainer'&&user?.role==='trainer') loadTrainer();
+}
+
+function sendWA(){
+  const d=diary.length?diary.map(m=>`• ${m.name}: ${m.kcal}kcal`).join('\n'):'Sin registros';
+  const mt=todayMood?`${todayMood.mood.toUpperCase()} (Energía: ${todayMood.energy}/10)`:'No registrado';
+  window.open('https://wa.me/?text='+encodeURIComponent(`*DREX COACH AI — REPORTE* 💪\n\n📅 ${new Date().toLocaleDateString('es')}\n\n🍽️ *NUTRICIÓN:*\n${d}\n\nTOTAL: ${totalKcal} KCAL / META: ${user?.calories_target||2200} KCAL\n\n🧠 *ESTADO:* ${mt}\n\n💪 *ENTRENO:* ${exDoneN}/6 ejercicios\n\n_DREX COACH AI · BY DREXLER_`),'_blank');
+}
+
+// ════════════════════ SUBSCRIPTION WALL ════════════════════
+let swSelPlan='pro';
+function showSubWall(){document.getElementById('subWall').classList.remove('hidden');const p=document.querySelector('[data-plan="pro"]');if(p)selSwPlan(p);}
+function hideSubWall(){document.getElementById('subWall').classList.add('hidden');}
+function selSwPlan(el){document.querySelectorAll('.sw-plan').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');swSelPlan=el.dataset.plan;document.getElementById('swSelPrice').textContent=el.dataset.price;}
+function goToStripe(){
+  const links={basic:'https://buy.stripe.com/REPLACE_BASIC_LINK',pro:'https://buy.stripe.com/REPLACE_PRO_LINK',elite:'https://buy.stripe.com/REPLACE_ELITE_LINK'};
+  const btn=document.getElementById('swPayBtn');btn.classList.add('loading');btn.textContent='⏳ REDIRIGIENDO...';
+  const email=user?.email?`?prefilled_email=${encodeURIComponent(user.email)}`:'';
+  setTimeout(()=>{window.open(links[swSelPlan]+email,'_blank');btn.classList.remove('loading');btn.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg> PAGAR CON STRIPE — <span id="swSelPrice">${document.querySelector('.sw-plan.sel')?.dataset?.price||'$39'}</span>/MES`;},800);
+}
+function checkSubManual(){
+  toast('🔄 Verificando suscripción...','info');
+  api('GET','auth/me').then(r=>{if(r&&r.subscription_status==='active'){hideSubWall();updateUI();toast('✅ Suscripción activa','success');}else{toast('⚠️ Aún no verificada. Puede tardar unos minutos.','error');}});
+}
+function checkSubGate(){
+  if(!user)return;
+  if(user.role==='trainer'||user.subscription_status==='active'){hideSubWall();document.getElementById('mainApp').style.pointerEvents='';document.getElementById('mainApp').style.filter='';}
+  else{showSubWall();document.getElementById('mainApp').style.pointerEvents='none';document.getElementById('mainApp').style.filter='blur(3px)';}
+}
+
+// ════════════════════ PROFILE COMPLETION ════════════════════
+function checkProfileCompletion(){
+  if(!user||user.role==='trainer')return;
+  const fields=[user.weight_kg,user.height_cm,user.age,user.goal,user.level,user.gender,user.calories_target];
+  const filled=fields.filter(Boolean).length,total=fields.length;
+  const pct=Math.round((filled/total)*100);
+  const banner=document.getElementById('profileBanner'),bar=document.getElementById('pbBar'),sub=document.getElementById('pbSub');
+  if(!banner)return;
+  if(pct<100){banner.style.display='block';bar.style.width=Math.max(pct,10)+'%';const missing=total-filled;sub.textContent=`Perfil ${pct}% completo · Faltan ${missing} dato${missing!==1?'s':''} · El AI te conocerá mejor`;}
+  else{banner.style.display='none';}
+}
+
+// ════════════════════ ADMIN TABS ════════════════════
+function admTab(tab,el){
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.adm-section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');document.getElementById('adm-'+tab)?.classList.add('active');
+  if(tab==='videos')renderVidLibrary();
+  if(tab==='routines')populateRtClients();
+}
+
+let allClients=[];
+function filterClients(q){
+  const f=q?allClients.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.email?.toLowerCase().includes(q.toLowerCase())):allClients;
+  renderClientList(f);
+}
+function renderClientList(clients){
+  document.getElementById('clBody').innerHTML=clients.map(c=>`<div class="cl-item" onclick="selClient('${c.id}',${JSON.stringify(c).replace(/'/g,"\'")})" id="cli-${c.id}"><div class="cl-av">${c.name.charAt(0)}</div><div style="flex:1"><div class="cl-nm">${c.name.toUpperCase()}</div><div class="cl-mt">${c.goal||'—'} · ${c.level||'—'}</div></div><span class="cl-badge ${c.subscription_status==='active'?'b-on':'b-off'}">${c.subscription_status==='active'?'ON':'OFF'}</span></div>`).join('');
+}
+function selClient(id,data){
+  document.querySelectorAll('.cl-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('cli-'+id)?.classList.add('active');
+  const c=typeof data==='string'?JSON.parse(data):data;
+  const subOn=c.subscription_status==='active';
+  document.getElementById('clDet').innerHTML=`
+    <div class="cl-ph"><div class="cl-ph-av">${c.name.charAt(0)}</div><div class="cl-ph-info"><div class="cl-ph-name">${c.name.toUpperCase()}</div><div class="cl-ph-meta">${c.email||'—'} · ${c.gender||'—'} · ${c.age?c.age+' años':''} · ${c.whatsapp||'Sin WhatsApp'}</div><div class="cl-ph-tags"><span class="cl-ph-tag tag-lvl">${c.level||'N/A'}</span><span class="cl-ph-tag tag-goal">${c.goal||'N/A'}</span><span class="cl-ph-tag ${subOn?'tag-sub-on':'tag-sub-off'}">${subOn?'✅ ACTIVO':'❌ INACTIVO'}</span>${c.height_cm?`<span class="cl-ph-tag tag-lvl">${c.height_cm}cm</span>`:''}</div></div></div>
+    <div class="cl-stats-grid"><div class="cl-stat"><div class="cl-stat-v">${c.weight_kg||'—'}</div><div class="cl-stat-l">PESO kg</div></div><div class="cl-stat"><div class="cl-stat-v">${c.calories_target||2200}</div><div class="cl-stat-l">KCAL META</div></div><div class="cl-stat"><div class="cl-stat-v">${c.height_cm||'—'}</div><div class="cl-stat-l">ALTURA cm</div></div><div class="cl-stat"><div class="cl-stat-v">${subOn?'✅':'❌'}</div><div class="cl-stat-l">SUSCRIPCIÓN</div></div></div>
+    <div class="prompt-section"><div class="prompt-label">🧠 PROMPT AI PERSONALIZADO</div><div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub2);margin-bottom:8px;line-height:1.5;">El AI usará este contexto solo para <strong style="color:var(--sub)">${c.name.split(' ')[0]}</strong>.</div><div class="quick-prompts"><div class="qpr" onclick="appendPrompt('${id}','Evitar sentadillas por lesión de rodilla.')">🦵 Lesión rodilla</div><div class="qpr" onclick="appendPrompt('${id}','Solo puede entrenar en casa, sin equipamiento.')">🏠 Casa sin equipo</div><div class="qpr" onclick="appendPrompt('${id}','Dieta vegetariana. Sin proteína animal.')">🥦 Vegetariano</div><div class="qpr" onclick="appendPrompt('${id}','Adulto mayor de 60+. Priorizar movilidad y bajo impacto.')">👴 60+ años</div><div class="qpr" onclick="appendPrompt('${id}','Embarazada. Solo ejercicios aprobados para embarazo.')">🤰 Embarazo</div></div><textarea class="ai-prompt-ed" id="cPrmt-${id}" rows="5" placeholder="Ej: Lesión de hombro derecho...">${c.trainer_prompt||''}</textarea></div>
+    <div class="blk-h">NOTAS PRIVADAS DEL COACH</div>
+    <textarea class="pr-ed" id="cNotes-${id}" rows="3" placeholder="Notas internas que solo tú ves...">${c.custom_notes||''}</textarea>
+    <div class="cl-actions"><button class="action-btn ab-primary" onclick="saveClient('${id}')">💾 GUARDAR</button><button class="action-btn ab-wa" onclick="dmClient('${id}','${c.name.split(' ')[0]}','${c.whatsapp||''}')">💬 WHATSAPP</button><button class="action-btn ab-ghost" onclick="assignRoutine('${id}')">📋 RUTINA</button></div>`;
+}
+function appendPrompt(id,text){const el=document.getElementById('cPrmt-'+id);if(!el)return;el.value=(el.value?el.value.trim()+'\n':'')+text;el.focus();}
+function assignRoutine(id){toast('📋 Función disponible en Etapa 2','info');}
+async function saveClient(id){const r=await api('PUT','trainer/clients/'+id,{trainer_prompt:document.getElementById('cPrmt-'+id)?.value||'',custom_notes:document.getElementById('cNotes-'+id)?.value||''});if(r.success)toast('✅ ATLETA ACTUALIZADO','success');else toast('ERROR AL GUARDAR','error');}
+function dmClient(id,name,phone){const msg=prompt(`Mensaje para ${name}:`);if(!msg)return;const text=encodeURIComponent(`💪 *DREX COACH* — Mensaje de Drexler:
+
+Hola ${name}!
+
+${msg}`);if(phone)window.open(`https://wa.me/${phone.replace(/\D/g,'')}?text=${text}`,'_blank');else window.open(`https://wa.me/?text=${text}`,'_blank');}
+
+// ════════════════════ ROUTINE BUILDER ════════════════════
+// ════════════════════ ROUTINE BUILDER ════════════════════
+const rtDays={LUN:[],MAR:[],MIÉ:[],JUE:[],VIE:[],SÁB:[],DOM:[]};
+const rtDayNotes={LUN:'',MAR:'',MIÉ:'',JUE:'',VIE:'',SÁB:'',DOM:''};
+let rtActiveDays=new Set(['LUN','MAR','JUE']);
+let rtActiveDay='LUN';
+
+function toggleTrainDay(el,day){
+  rtDays[rtActiveDay]=collectExRows();
+  rtDayNotes[rtActiveDay]=document.getElementById('rtDayNotes')?.value||'';
+  document.querySelectorAll('.rt-active-toggle').forEach(d=>d.classList.remove('active-edit'));
+  el.classList.add('active-edit');
+  rtActiveDay=day;
+  document.getElementById('rtDayLabel').textContent='DÍA: '+day+(rtActiveDays.has(day)?'':' · DESCANSO');
+  renderExRows(rtDays[day]||[]);
+  if(document.getElementById('rtDayNotes'))document.getElementById('rtDayNotes').value=rtDayNotes[day]||'';
+}
+
+function selRtDay(el,day){toggleTrainDay(el,day);}
+function collectExRows(){return[...document.querySelectorAll('.ex-builder-row')].map(row=>({name:row.querySelector('.ex-nm-inp')?.value||'',sets:row.querySelector('.ex-sets-inp')?.value||'',reps:row.querySelector('.ex-reps-inp')?.value||'',rest:row.querySelector('.ex-rest-inp')?.value||'',notes:row.querySelector('.ex-notes-inp')?.value||''})).filter(e=>e.name);}
+function renderExRows(exs){const list=document.getElementById('rtExList');list.innerHTML='';if(exs.length)exs.forEach(e=>addExRow(e));}
+let exRowCount=0;
+function addExRow(data={}){
+  const row=document.createElement('div');row.className='ex-builder-row';
+  row.innerHTML=`<span class="ex-drag">⠿</span><input class="ex-nm-inp" style="flex:2;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 9px;color:var(--txt);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;outline:none;" placeholder="Nombre del ejercicio" value="${data.name||''}"><input class="ex-sets-inp" style="width:52px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 6px;color:var(--r);font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;outline:none;" placeholder="Series" value="${data.sets||''}"><input class="ex-reps-inp" style="width:58px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 6px;color:var(--bl);font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;outline:none;" placeholder="Reps" value="${data.reps||''}"><input class="ex-rest-inp" style="width:58px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 6px;color:var(--sub);font-family:'Share Tech Mono',monospace;font-size:11px;text-align:center;outline:none;" placeholder="Descanso" value="${data.rest||'90s'}"><input class="ex-notes-inp" style="flex:1.5;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-bottom:1px solid rgba(255,26,26,.2);padding:7px 9px;color:var(--sub);font-family:'Share Tech Mono',monospace;font-size:9px;outline:none;" placeholder="Notas..." value="${data.notes||''}"><button class="ex-del" onclick="this.closest('.ex-builder-row').remove()">✕</button>`;
+  document.getElementById('rtExList').appendChild(row);
+}
+function saveRoutine(){
+  rtDays[rtActiveDay]=collectExRows();
+  rtDayNotes[rtActiveDay]=document.getElementById('rtDayNotes')?.value||'';
+  const name=document.getElementById('rtName').value;
+  if(!name){toast('⚠️ Dale un nombre a la rutina','error');return;}
+  const routine={id:Date.now(),name,client:document.getElementById('rtClient').value,level:document.getElementById('rtLevel').value,duration:document.getElementById('rtDur').value,type:document.getElementById('rtType').value,activeDays:[...rtActiveDays],days:JSON.parse(JSON.stringify(rtDays)),dayNotes:JSON.parse(JSON.stringify(rtDayNotes)),createdAt:new Date().toLocaleDateString('es')};
+  const saved=JSON.parse(localStorage.getItem('drex_routines')||'[]');
+  saved.push(routine);localStorage.setItem('drex_routines',JSON.stringify(saved));
+  toast('✅ RUTINA GUARDADA','success');renderSavedRoutines();
+}
+function renderSavedRoutines(){const saved=JSON.parse(localStorage.getItem('drex_routines')||'[]');const el=document.getElementById('rtSavedList');if(!saved.length){el.innerHTML='<div class="empty-s">No hay rutinas guardadas.</div>';return;}el.innerHTML=saved.slice().reverse().map((r,i)=>`<div style="background:var(--s2);border:1px solid var(--brd);padding:14px 16px;margin-bottom:6px;display:flex;align-items:center;gap:14px"><div style="flex:1"><div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;text-transform:uppercase">${r.name}</div><div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--sub);margin-top:2px">${r.type||''} · ${r.level||''} · ${(r.activeDays||[]).join('-')||'todos'} · ${r.createdAt}</div></div><button class="btn btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="loadRoutine(${saved.length-1-i})">CARGAR</button><button class="btn btn-out" style="font-size:11px;padding:6px 12px;color:var(--r);" onclick="deleteRoutine(${saved.length-1-i})">✕</button></div>`).join('');}
+function loadRoutine(idx){const saved=JSON.parse(localStorage.getItem('drex_routines')||'[]');const r=saved[idx];if(!r)return;document.getElementById('rtName').value=r.name;document.getElementById('rtLevel').value=r.level;document.getElementById('rtDur').value=r.duration;document.getElementById('rtType').value=r.type;if(r.activeDays){rtActiveDays=new Set(r.activeDays);document.querySelectorAll('.rt-active-toggle').forEach(el=>{const d=el.dataset.day;el.classList.toggle('active',rtActiveDays.has(d));el.style.opacity=rtActiveDays.has(d)?'':'.35';});}Object.assign(rtDays,r.days||{});Object.assign(rtDayNotes,r.dayNotes||{});renderExRows(rtDays[rtActiveDay]||[]);if(document.getElementById('rtDayNotes'))document.getElementById('rtDayNotes').value=rtDayNotes[rtActiveDay]||'';toast('📋 RUTINA CARGADA','info');}
+function deleteRoutine(idx){if(!confirm('¿Eliminar esta rutina?'))return;const saved=JSON.parse(localStorage.getItem('drex_routines')||'[]');saved.splice(idx,1);localStorage.setItem('drex_routines',JSON.stringify(saved));renderSavedRoutines();}
+function previewRoutine(){rtDays[rtActiveDay]=collectExRows();toast('DÍAS ACTIVOS: '+[...rtActiveDays].join(' · '),'info');}
+function populateRtClients(){const sel=document.getElementById('rtClient');if(!sel||!allClients.length)return;sel.innerHTML='<option value="">-- Todos los clientes --</option>'+allClients.map(c=>`<option value="${c.id}">${c.name.toUpperCase()}</option>`).join('');}
+
+// ════════════════════ WHATSAPP 5AM ════════════════════
+function saveWaConfig(){const cfg={time:document.getElementById('waTime').value,tone:document.getElementById('waTone').value,base:document.getElementById('waBase').value};localStorage.setItem('drex_wa_config',JSON.stringify(cfg));toast('✅ CONFIG WHATSAPP GUARDADA','success');}
+async function previewWaMsg(){
+  const el=document.getElementById('waMsgPreview');el.style.display='block';el.textContent='⏳ Generando con AI...';
+  const tone=document.getElementById('waTone').value,base=document.getElementById('waBase').value;
+  const saved=JSON.parse(localStorage.getItem('drex_routines')||'[]');
+  const routine=saved[saved.length-1];
+  const todayKey=DAY_MAP[new Date().getDay()];
+  const dayExs=routine?.days?.[todayKey]||[];
+  const exList=dayExs.length?dayExs.map((e,i)=>`${i+1}. ${e.name} — ${e.sets} series × ${e.reps} (descanso ${e.rest})`).join('\n'):'(sin ejercicios asignados para hoy)';
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:`Eres Drexler, coach fitness. Genera mensaje WhatsApp 5AM.\n\nCliente ejemplo: Carlos | Meta: Hipertrofia | Nivel: Intermedio | Ánimo ayer: motivado | Energía: 8/10\nTono: ${tone}\nMensaje base: "${base||'Buenos días! Aquí está tu rutina de hoy.'}"\n\nEjercicios (${todayKey}):\n${exList}\n\nEscribe el mensaje completo, máximo 200 palabras, formato lista para ejercicios, termina motivando. Solo el texto del mensaje.`}]})});
+    const data=await r.json();
+    el.textContent=data.content?.map(b=>b.text||'').join('')||'Error al generar.';
+  }catch(e){el.textContent='Error. Verifica la API key.';}
+}
+
+
+// ════════════════════ VIDEO LIBRARY ════════════════════
+let vidLib=JSON.parse(localStorage.getItem('drex_videos')||'[]');
+function handleVidUpload(input){const files=Array.from(input.files);if(!files.length)return;const bar=document.getElementById('vidProg'),wrap=document.getElementById('vidProgWrap');wrap.style.display='block';bar.style.width='0%';let prog=0;const int=setInterval(()=>{prog+=5;bar.style.width=prog+'%';if(prog>=100){clearInterval(int);wrap.style.display='none';toast(`📁 ${files.length} archivo(s) listo(s). Completa los datos y guarda.`,'success');}},40);const fname=document.getElementById('vidExName');if(!fname.value&&files[0])fname.value=files[0].name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');}
+function saveVidEntry(){const name=document.getElementById('vidExName').value;if(!name){toast('⚠️ Ingresa el nombre del ejercicio','error');return;}const entry={id:Date.now(),name,muscle:document.getElementById('vidMuscle').value,instructions:document.getElementById('vidInstr').value,createdAt:new Date().toLocaleDateString('es'),emoji:{PIERNA:'🦵',PECHO:'💪',ESPALDA:'🏋️',HOMBROS:'🏹',BÍCEPS:'💪',TRÍCEPS:'💪',ABDOMEN:'🔥',GLÚTEOS:'🍑','FULL BODY':'⚡'}[document.getElementById('vidMuscle').value]||'🏋️'};vidLib.push(entry);localStorage.setItem('drex_videos',JSON.stringify(vidLib));document.getElementById('vidExName').value='';document.getElementById('vidInstr').value='';toast('✅ EJERCICIO GUARDADO EN BIBLIOTECA','success');renderVidLibrary();}
+let vidFilter='todos';
+function filterVids(f,el){vidFilter=f;document.querySelectorAll('[onclick^="filterVids"]').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderVidLibrary();}
+function renderVidLibrary(){const lib=document.getElementById('vidLibrary');const filtered=vidFilter==='todos'?vidLib:vidLib.filter(v=>v.muscle===vidFilter);if(!filtered.length){lib.innerHTML='<div class="empty-s" style="grid-column:1/-1">No hay ejercicios en esta categoría.</div>';return;}lib.innerHTML=filtered.map(v=>`<div class="vid-card"><div class="vid-thumb"><span style="font-size:32px">${v.emoji}</span><div class="vid-play">▶</div></div><button class="vid-del" onclick="delVid(${v.id})">✕</button><div class="vid-nm">${v.name}</div><div class="vid-meta">${v.muscle} · ${v.createdAt}</div></div>`).join('');}
+function delVid(id){vidLib=vidLib.filter(v=>v.id!==id);localStorage.setItem('drex_videos',JSON.stringify(vidLib));renderVidLibrary();toast('🗑️ Ejercicio eliminado','info');}
+function saveBehavior(){const cfg={lang:document.getElementById('aiLang').value,tone:document.getElementById('aiTone').value,restrictions:document.getElementById('aiRestr').value};localStorage.setItem('drex_ai_config',JSON.stringify(cfg));toast('✅ CONFIGURACIÓN DE AI GUARDADA','success');}
+
+// ════════════════════ ADMIN LOAD ════════════════════
+async function loadTrainer(){
+  try{
+    const [dash,clients,cfg]=await Promise.all([api('GET','trainer/dashboard'),api('GET','trainer/clients'),api('GET','trainer/config')]);
+    document.getElementById('trCl').textContent=dash.total_clients||0;
+    document.getElementById('trAc').textContent=dash.active_subscribers||0;
+    document.getElementById('trRf').textContent=dash.total_referral_uses||0;
+    const rev=(dash.active_subscribers||0)*39;
+    document.getElementById('trRev').textContent=rev?'$'+rev:'—';
+    if(cfg.global_prompt){document.getElementById('gPrompt').value=cfg.global_prompt;gPromptVal=cfg.global_prompt;}
+    allClients=clients||[];
+    document.getElementById('clCnt').textContent=allClients.length;
+    renderClientList(allClients);
+    populateRtClients();
+    renderSavedRoutines();
+    renderVidLibrary();
+  }catch(e){toast('ERROR CARGANDO PANEL','error');}
+}
+
+async function saveGPrompt(){
+  const p=document.getElementById('gPrompt').value;
+  const r=await api('PUT','trainer/config',{global_prompt:p});
+  if(r.success){gPromptVal=p;toast('✅ PROMPT GLOBAL GUARDADO','success');}else toast('ERROR AL GUARDAR','error');
+}
+
+// ════════════════════ ADMIN ACCESS ════════════════════
+function adminQuickAccess(){
+  user={id:'admin-local',name:'Drexler',email:'drex@admin.com',role:'trainer',subscription_status:'active',goal:'Rendimiento',level:'Avanzado',calories_target:2800};
+  token='admin-temp-token';
+  localStorage.setItem('dc_token',token);
+  localStorage.setItem('dc_user_cache',JSON.stringify(user));
+  enterApp();
+  toast('🔐 ACCESO ADMIN DIRECTO','info');
+}
+let _logoClicks=0,_logoT;
+document.addEventListener('DOMContentLoaded',()=>{
+  const logo=document.querySelector('.logo');
+  if(logo) logo.addEventListener('click',()=>{
+    _logoClicks++;clearTimeout(_logoT);
+    _logoT=setTimeout(()=>_logoClicks=0,2000);
+    if(_logoClicks>=5){_logoClicks=0;adminQuickAccess();}
+  });
+});
+
+// ════════════════════ UTILS ════════════════════
+async function api(m,ep,b){
+  try{const o={method:m,headers:{'Content-Type':'application/json'}};if(token)o.headers['Authorization']='Bearer '+token;if(b)o.body=JSON.stringify(b);const r=await fetch(`${API}/${ep}`,o);return await r.json();}catch(e){return{error:'Network error'};}
+}
+async function toB64(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(file);});}
+function md(t){return t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function fmtT(){const d=new Date();return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;}
+let _tt;function toast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className=`show ${type}`;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3500);}
+</script>
+</body>
+</html>
